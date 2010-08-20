@@ -2,22 +2,17 @@
 
 
 //steps per inch or mm
-float _units[3] = {
-  X_STEPS_PER_MM,Y_STEPS_PER_MM,Z_STEPS_PER_MM};
-float curve_section = CURVE_SECTION_MM;
-
-//our feedrate variables.
+float _units[3];
+float curve_section;
 float feedrate = 0.0;
 long feedrate_micros = 0;
 
-
-
 void setXYZ(FloatPoint *fp) {
-  fp->x = (command_exists('X')) ? (getValue('X') + ((abs_mode) ? 0 : xaxis->current_units)) :   
+  fp->x = (command_exists('X')) ? (getValue('X') + ((config.abs_mode) ? 0 : xaxis->current_units)) :   
   xaxis->current_units;
-  fp->y = (command_exists('Y')) ? (getValue('Y') + ((abs_mode) ? 0 : yaxis->current_units)) :   
+  fp->y = (command_exists('Y')) ? (getValue('Y') + ((config.abs_mode) ? 0 : yaxis->current_units)) :   
   yaxis->current_units;
-  fp->z = (command_exists('Z')) ? (getValue('Z') + ((abs_mode) ? 0 : zaxis->current_units)) :   
+  fp->z = (command_exists('Z')) ? (getValue('Z') + ((config.abs_mode) ? 0 : zaxis->current_units)) :   
   zaxis->current_units;
 }
 
@@ -53,8 +48,8 @@ void process_string(uint8_t  *instruction) {
     case 1: //Coordinated Motion
       setXYZ(&fp);
       set_target(&fp);
-      if (command_exists('F')) _feedrate = getValue('F'); //feedrate persists till changed.
-      r_move( _feedrate );
+      if (command_exists('F')) r_move(getValue('F')); //feedrate persists till changed.
+      else r_move( getMaxFeedrate() );
       break;
     case 2://Clockwise arc
     case 3://Counterclockwise arc
@@ -113,16 +108,16 @@ void process_string(uint8_t  *instruction) {
       //delay((int)getValue('P'));
       break;
     case 20: //Inches for Units
-      _units[0] = X_STEPS_PER_INCH;
-      _units[1] = Y_STEPS_PER_INCH;
-      _units[2] = Z_STEPS_PER_INCH;
+      _units[0] = config.steps_inch.x;
+      _units[1] = config.steps_inch.y;
+      _units[2] = config.steps_inch.z;
       curve_section = CURVE_SECTION_INCHES;
       calculate_deltas();
       break;
     case 21: //mm for Units
-      _units[0] = X_STEPS_PER_MM;
-      _units[1] = Y_STEPS_PER_MM;
-      _units[2] = Z_STEPS_PER_MM; 
+      _units[0] = (uint16_t)((float)config.steps_inch.x / 22.4);
+      _units[1] = (uint16_t)((float)config.steps_inch.y / 22.4);
+      _units[2] = (uint16_t)((float)config.steps_inch.z / 22.4);
       curve_section = CURVE_SECTION_MM;
       calculate_deltas();
       break;
@@ -149,7 +144,7 @@ void process_string(uint8_t  *instruction) {
       calculate_deltas();
       r_move(getMaxFeedrate());
       //Drill DOWN
-      zaxis->target_units = getValue('Z') + ((abs_mode) ? 0 : zaxis->current_units);
+      zaxis->target_units = getValue('Z') + ((config.abs_mode) ? 0 : zaxis->current_units);
       calculate_deltas();
       r_move(getMaxFeedrate());
       //Drill UP
@@ -157,10 +152,12 @@ void process_string(uint8_t  *instruction) {
       calculate_deltas();
       r_move(getMaxFeedrate());
     case 90://Absolute Positioning
-      abs_mode = true;
+      config.abs_mode = true;
+      config_save();
       break;
     case 91://Incremental Positioning
-      abs_mode = false;
+      config.abs_mode = false;
+      config_save();
       break;
     case 92://Set as home
       set_position(&zeros);
@@ -183,7 +180,7 @@ void process_string(uint8_t  *instruction) {
       break;
     case 5: // turn off motor
       motor_off();
-      break;
+      break;      
     case 82:
       DDRC |= _BV(1);
       PORTC &= ~_BV(1);
@@ -207,130 +204,50 @@ void process_string(uint8_t  *instruction) {
           PORTB |= _BV(2);
           delayMicroseconds(1);
           PORTB &= ~_BV(2);
-          delayMicroseconds(12.5*stepping);
+          delayMicroseconds(12.5*config.stepping);
         }
       }
       break;
-    case 81:
-      DDRC |= _BV(1);
-      PORTC &= ~_BV(1);
-      DDRC &= ~_BV(0);
-      PORTC |= _BV(0);
-      while(1) {
-        if (PINC & _BV(0)) Serial.println("high");
-        else Serial.println("low");
-      }
+    case 100: //specify currents in AMPS
+      if (command_exists('X')) 
+      if (code = setCurrent(CHAN_X, getValue('X'))) config.current.x = code;
+      else Serial.println("ERR_X"); 
+      if (command_exists('Y')) 
+      if (code = setCurrent(CHAN_X, getValue('Y'))) config.current.y = code;
+      else Serial.println("ERR_Y"); 
+      if (command_exists('Z')) 
+      if (code = setCurrent(CHAN_X, getValue('Z'))) config.current.z = code;
+      else Serial.println("ERR_Z"); 
+      config_save();
       break;
-    case 80: //plot out surface of milling area
-      DDRC |= _BV(1);
-      PORTC &= ~_BV(1);
-      DDRC &= ~_BV(0);
-      PORTC |= _BV(0);
-      // setup initial position
-      fp.x = 0;
-      fp.y = 0;
-      fp.z = 0;
-      set_target(&fp);
-      set_position(&fp);
-      r_move(0);
-      for (int i=0; i<160; i+=2) {
-        for (float j=0; j<75; j+=2) {
-          fp.x=i;
-          fp.y=j;
-          fp.z=0;
-          set_target( &fp );
-          r_move( 0 );
-          k=0;
-          PORTB &= ~(_BV(5)); //go down
-          while(PINC & _BV(0)) {
-            PORTB |= _BV(2);
-            delayMicroseconds(1);
-            PORTB &= ~_BV(2);
-            delayMicroseconds(200);
-            k++;
-          }
-          //print result for this point
-          Serial.print(i,DEC);
-          Serial.print(",");
-          Serial.print(j,DEC);
-          Serial.print(",");
-          Serial.println(k,DEC);
-          PORTB |= _BV(5);  //move up to origin        
-          while (k--) {
-            PORTB |= _BV(2);
-            delayMicroseconds(1);
-            PORTB &= ~_BV(2);
-            delayMicroseconds(200);
-          }
-        }
-      }
+    case 101: //specify steps/inch
+      if (command_exists('X')) config.steps_inch.x = getValue('X');
+      if (command_exists('Y')) config.steps_inch.y = getValue('Y');
+      if (command_exists('Z')) config.steps_inch.z = getValue('Z');
+      config_save();
       break;
-    case 90: //plot out surface of milling area
-      DDRC |= _BV(1);
-      PORTC &= ~_BV(1);
-      DDRC &= ~_BV(0);
-      PORTC |= _BV(0);
-      // setup initial position
-      fp.x = 0;
-      fp.y = 135;
-      fp.z = 0;
-      set_target(&fp);
-      set_position(&fp);
-      r_move(0);
-      for (int i=0; i<1; i++) {
-        for (float j=135; j!=0; j-=.25) {
-          fp.x=i;
-          fp.y=j;
-          fp.z=0;
-          set_target( &fp );
-          r_move( 0 );
-          k=0;
-          PORTB |= _BV(5); //go down
-          while(PINC & _BV(0)) {
-            PORTB |= _BV(2);
-            delayMicroseconds(1);
-            PORTB &= ~_BV(2);
-            delayMicroseconds(200);
-            k++;
-          }
-          //print result for this point
-          Serial.print(i,DEC);
-          Serial.print(",");
-          Serial.print(j,DEC);
-          Serial.print(",");
-          Serial.println(k,DEC);
-          PORTB &= ~_BV(5);  //move up to origin        
-          while (k--) {
-            PORTB |= _BV(2);
-            delayMicroseconds(1);
-            PORTB &= ~_BV(2);
-            delayMicroseconds(200);
-          }
-        }
-      }
+    case 102: //specify max feedrate
+      if (command_exists('X')) config.max_feedrate.x = getValue('X');
+      if (command_exists('Y')) config.max_feedrate.y = getValue('Y');
+      if (command_exists('Z')) config.max_feedrate.z = getValue('Z');
+      config_save();
       break;
-    case 98: //M98 Find Z0 where it is one step from touching.
-      DDRC |= _BV(1);
-      PORTC &= ~_BV(1);
-      DDRC &= ~_BV(0);
-      PORTC |= _BV(0);
-      PORTB |= _BV(5);
-      while(PINC & _BV(0)) {
-        PORTB |= _BV(2);
-        delayMicroseconds(1);
-        PORTB &= ~_BV(2);
-        delayMicroseconds(200);
-      }
-      break;
-    case 99: //M99 S{1,2,4,8,16} -- set stepping mode
+    case 103: //M99 S{1,2,4,16} -- set stepping mode
       if (command_exists('S')) {
         code = getValue('S');
-        if (code == 1 || code == 2 || code == 4 || code == 8 || code == 16) {
-          stepping = code;
-          setStep(stepping);
-          break;
+        if (code == 1 || code == 2 || code == 4 ||  code == 16) {
+          config.stepping = code;
+          setStep(config.stepping);
+          config_save();
         }
       }
+      break;
+    case 200:
+      config_save();
+      break;
+    case 201:
+      config_dump();
+      break;
     default:
       Serial.print("huh? M");
       Serial.println(code,DEC);

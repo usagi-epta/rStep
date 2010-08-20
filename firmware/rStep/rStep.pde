@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include <inttypes.h>
 #include "_init.h"
 #include <string.h>
@@ -5,14 +6,12 @@
 #include <stdlib.h>
 
 
-bool    abs_mode = true;   //0 = incremental; 1 = absolute
-uint8_t stepping = DEFAULT_STEP;
-uint8_t command_word[COMMAND_SIZE];
-uint8_t serial_count=0;
+uint8_t  command_word[COMMAND_SIZE];
+uint8_t  serial_count=0;
 uint16_t no_data = 0;
-uint16_t oldKeys;
-axis axis_array[3];
-float _feedrate;
+axis     axis_array[3];
+struct   config_t config;
+FloatPoint zeros = {0.0,0.0,0.0};
 
 struct axis_t xaxis_data;
 struct axis_t yaxis_data;
@@ -23,18 +22,22 @@ axis yaxis;
 axis zaxis;
 
 void setup() {
-  //serial
   Serial.begin(9600);
- 
+  pinMode(17, OUTPUT);// init led
+  LED_ON();
+
   //init code
-//  keypad_init();
+  config_read();
+  mcp4351_init();
   myStepper_init();
   motor_init();
   init_steppers();
-  _feedrate = getMaxFeedrate();
   init_process_string();
   //increase clock resolution
   TCCR0B &= ~_BV(CS00); //for ATmega168!! XXX: this will mess up millis,micros,delay,delayMicroseconds
+ 
+  //default configuration
+  process_string((uint8_t*)"G20"); //default in mm
  
   Serial.println("start");
 }
@@ -66,34 +69,6 @@ void loop() {
     process_string(command_word); //do
     init_process_string(); //clear
   }
-
-/*
-  //keypad actions
-  newKeys = keypad_scan();
-  if (newKeys != oldKeys) {
-    Serial.println(newKeys,HEX);
-    oldKeys = newKeys;
-    switch(newKeys) {
-      case _BV(1):
-      case _BV(2):
-      case _BV(3):
-      case _BV(4):
-      case _BV(5):
-      case _BV(6):
-      case _BV(7):
-      case _BV(8):
-      case _BV(9):
-      case _BV(10):
-      case _BV(11):
-      case _BV(12):
-      case _BV(13):
-      case _BV(14):
-      case _BV(15):
-      default:
-        break;
-    }
-  }
-*/
 
   //no data?  turn off steppers
   if (no_data > 1000)  {

@@ -27,13 +27,9 @@ void init_steppers(){
   yaxis->step_pin = STEP_Y;
   zaxis->step_pin = STEP_Z;
 
-  xaxis->min_pin  = MIN_X;
-  yaxis->min_pin  = MIN_Y;
-  zaxis->min_pin  = MIN_Z;
-
-  xaxis->max_pin  = MAX_X;
-  yaxis->max_pin  = MAX_Y;
-  zaxis->max_pin  = MAX_Z;
+  xaxis->minMax_pin  = MINMAX_X;
+  yaxis->minMax_pin  = MINMAX_Y;
+  zaxis->minMax_pin  = MINMAX_Z;
 
   xaxis->direct_step_pin = _STEP_X;
   yaxis->direct_step_pin = _STEP_Y;
@@ -53,56 +49,15 @@ axis nextEvent(void) {
   }
 }
 
-/*
-void fast_move(void) {
- axis a;
- uint8_t i;
- uint32_t starttime;
- 
- xaxis->timePerStep = (1E6*60.0) / (MAX_X_FEEDRATE * X_STEPS_PER_INCH * stepping);
- yaxis->timePerStep = (1E6*60.0) / (MAX_Y_FEEDRATE * Y_STEPS_PER_INCH * stepping);
- zaxis->timePerStep = (1E6*60.0) / (MAX_Z_FEEDRATE * Z_STEPS_PER_INCH * stepping);
- 
- // setup axis
- for (i=0;i<3;i++) {
- a = axis_array[i];
- if (axis_array[i]->delta_steps) {
- a->nextEvent = a->timePerStep; //1st event happens halfway though cycle.
- } 
- else {
- a->nextEvent = 0xFFFFFFFF;
- }
- }
- // start move
- starttime = micros();
- while (xaxis->delta_steps || yaxis->delta_steps || zaxis->delta_steps) {
- a = nextEvent();
- while (micros() < (starttime + a->nextEvent) ); //wait till next action is required
- if (can_move(a)) {
- _STEP_PORT |= a->direct_step_pin;
- //need to wait 1uS
- __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
- __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
- _STEP_PORT &= ~a->direct_step_pin;
- }
- 
- if (--a->delta_steps) {
- a->nextEvent += a->timePerStep;
- } 
- else {
- a->nextEvent = 0xFFFFFFFF; 
- }
- }
- 
- //we are at the target
- xaxis->current_units = xaxis->target_units;
- yaxis->current_units = yaxis->target_units;
- zaxis->current_units = zaxis->target_units;
- calculate_deltas();
- }
- */
 
-
+/* reset the interal timer to zero*/
+void myResetMicros(void) {
+  uint8_t oldSREG = SREG;
+  cli();
+  timer0_overflow_count = 0;
+  TCNT0 = 0;
+  SREG = oldSREG;
+}
 
 void r_move(float feedrate) {
   uint32_t starttime,duration;
@@ -113,9 +68,9 @@ void r_move(float feedrate) {
   //uint8_t sreg = intDisable();
 
   if (!feedrate ) {
-    xaxis->timePerStep = (1E6*60.0) / (MAX_X_FEEDRATE * X_STEPS_PER_INCH * stepping);
-    yaxis->timePerStep = (1E6*60.0) / (MAX_Y_FEEDRATE * Y_STEPS_PER_INCH * stepping);
-    zaxis->timePerStep = (1E6*60.0) / (MAX_Z_FEEDRATE * Z_STEPS_PER_INCH * stepping);
+    xaxis->timePerStep = (1E6*60.0) / (config.max_feedrate.x * config.steps_inch.x * config.stepping);
+    xaxis->timePerStep = (1E6*60.0) / (config.max_feedrate.y * config.steps_inch.y * config.stepping);
+    xaxis->timePerStep = (1E6*60.0) / (config.max_feedrate.z * config.steps_inch.z * config.stepping);
   } 
   else {
     // if (feedrate > getMaxFeedrate()) feedrate = getMaxFeedrate();
@@ -138,6 +93,7 @@ void r_move(float feedrate) {
     }
   }
 
+  myResetMicros();
   starttime = myMicros();  
   // start move
   while (xaxis->delta_steps || yaxis->delta_steps || zaxis->delta_steps) {
@@ -183,9 +139,7 @@ void set_position(FloatPoint *fp){
 }
 
 
-long to_steps(float steps_per_unit, float units){
-  return steps_per_unit * units * stepping;
-}
+
 
 void calculate_deltas() {
   //figure our deltas. 
@@ -195,7 +149,7 @@ void calculate_deltas() {
   for (i=0; i<3; i++) {
     a = axis_array[i];
     a->delta_units = a->target_units - a->current_units;
-    a->delta_steps = to_steps(_units[i], abs(a->delta_units)); //XXX make x_units a vector
+    a->delta_steps = (long)(_units[i]*abs(a->delta_units)*config.stepping); //XXX make x_units a vector
     a->direction = (a->delta_units < 0) ? BACKWARD : FORWARD;
 
     switch(i) {
@@ -215,9 +169,12 @@ void calculate_deltas() {
 
 uint16_t getMaxFeedrate() {
   uint16_t temp = _getMaxFeedrate();
-  return (_units[0] == X_STEPS_PER_MM) ? (temp*25.4) : temp;
+  return (_units[0] == config.max_feedrate.x) ? temp:(temp*25.4);
 }
 
+#define MAX_X_FEEDRATE config.max_feedrate.x
+#define MAX_Y_FEEDRATE config.max_feedrate.y
+#define MAX_Z_FEEDRATE config.max_feedrate.z
 uint16_t _getMaxFeedrate() {
   if (!xaxis->delta_steps) {
     if (!yaxis->delta_steps) return MAX_Z_FEEDRATE;
