@@ -68,9 +68,9 @@ void r_move(float feedrate) {
   //uint8_t sreg = intDisable();
 
   if (!feedrate ) {
-    xaxis->timePerStep = (1E6*60.0) / (config.max_feedrate.x * config.steps_inch.x * config.stepping);
-    xaxis->timePerStep = (1E6*60.0) / (config.max_feedrate.y * config.steps_inch.y * config.stepping);
-    xaxis->timePerStep = (1E6*60.0) / (config.max_feedrate.z * config.steps_inch.z * config.stepping);
+    xaxis->timePerStep = (double)(1E6*60.0) / (double)((double)config.max_feedrate.x * (double)config.steps_inch.x * (double)config.stepping);
+    yaxis->timePerStep = (double)(1E6*60.0) / (double)((double)config.max_feedrate.y * (double)config.steps_inch.y * (double)config.stepping);
+    zaxis->timePerStep = (double)(1E6*60.0) / (double)((double)config.max_feedrate.z * (double)config.steps_inch.z * (double)config.stepping);
   } 
   else {
     // if (feedrate > getMaxFeedrate()) feedrate = getMaxFeedrate();
@@ -87,11 +87,13 @@ void r_move(float feedrate) {
     if (axis_array[i]->delta_steps) {
       if (feedrate) a->timePerStep = duration / axis_array[i]->delta_steps;
       a->nextEvent = (a->timePerStep>>1); //1st event happens halfway though cycle.
+      Serial.println(a->timePerStep, DEC);
     } 
     else {
       a->nextEvent = 0xFFFFFFFF;
     }
   }
+  
 
   myResetMicros();
   starttime = myMicros();  
@@ -137,9 +139,6 @@ void set_position(FloatPoint *fp){
   zaxis->current_units = fp->z;
   calculate_deltas();
 }
-
-
-
 
 void calculate_deltas() {
   //figure our deltas. 

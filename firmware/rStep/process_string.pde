@@ -49,7 +49,7 @@ void process_string(uint8_t  *instruction) {
       setXYZ(&fp);
       set_target(&fp);
       if (command_exists('F')) r_move(getValue('F')); //feedrate persists till changed.
-      else r_move( getMaxFeedrate() );
+      else r_move( 0 );
       break;
     case 2://Clockwise arc
     case 3://Counterclockwise arc
@@ -211,13 +211,11 @@ void process_string(uint8_t  *instruction) {
     case 100: //specify currents in AMPS
       if (command_exists('X')) 
       if (code = setCurrent(CHAN_X, getValue('X'))) config.current.x = code;
-      else Serial.println("ERR_X"); 
       if (command_exists('Y')) 
-      if (code = setCurrent(CHAN_X, getValue('Y'))) config.current.y = code;
-      else Serial.println("ERR_Y"); 
+      if (code = setCurrent(CHAN_Y, getValue('Y'))) config.current.y = code;
       if (command_exists('Z')) 
-      if (code = setCurrent(CHAN_X, getValue('Z'))) config.current.z = code;
-      else Serial.println("ERR_Z"); 
+      if (code = setCurrent(CHAN_Z, getValue('Z'))) config.current.z = code;
+
       config_save();
       break;
     case 101: //specify steps/inch
