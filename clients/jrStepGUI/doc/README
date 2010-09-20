@@ -1,0 +1,39 @@
+This file is part of the jrStepGUI project.
+
+Copyright 2010 Jean-Louis Paquelin
+Contact info: jrstepgui@studionex.com
+
+INTRODUCTION
+
+Below you'll find some excerpts of the first mail I (Jean-Louis Paquelin) have
+exchanged with the rStep author (Reza Naima). It could be the seed of an
+installation documentation.
+
+jrStepGUI is a Java rStep Graphic User Interface. It is supposed to be
+platform independent. Actually, it depends on the availability of the RXTX
+library which handles the serial communications between a computer and the
+Arduino.
+
+INSTALLATION
+
+Before using jrStepGUI, you have to install the RXTX library. If you are under
+linux/windows/osx, download the library's archive and follow the instructions
+given in the file. Alternatively, you can try the library's web install. It
+should be easier to proceed this way, but I'm not shure it works.
+
+If you are running a less common OS, go to the RXTX website in the Download
+section or browse their repository, you need both the RXTXcomm.jar and the
+native library depending on your OS.
+
+RXTX library:
+	http://www.rxtx.org/
+RXTX library archive:
+	http://rxtx.qbang.org/pub/rxtx/rxtx-2.1-7-bins-r2.zip
+RXTX web install:
+	http://show.docjava.com:8086/book/cgij/code/jnlp/gnu.io.SafeCommDriver.jnlp
+RXTX for all OSes:
+	http://rxtx.qbang.org/ToyBox/2.1-7-build1/
+	
+btw, you need a working JRE 1.5 or greater.
+
+Once the library is installed, you'll just have to run jrStepGUI.jar.
