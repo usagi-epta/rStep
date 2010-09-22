@@ -36,7 +36,10 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 	 
 	public static final int GAP = 5;
 	
-	public static final int MESSAGE_DELAY = 5000;
+	/**
+	 * Delay of appearance of the statusJPanel messages
+	 */
+	public static final int MESSAGE_DELAY = 10000; // 10 seconds
 
 	private XYZJPanel xyzJPanel;
 	private StepJPanel stepJPanel;

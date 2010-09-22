@@ -37,3 +37,15 @@ RXTX for all OSes:
 btw, you need a working JRE 1.5 or greater.
 
 Once the library is installed, you'll just have to run jrStepGUI.jar.
+
+STORY
+
+2010-09-22
+* com.studionex.rStep.RStep.expect(String, long)
+  After upgrading the rStep firmware from r11 to r25 something went wrong with
+  the startup string and I had to change to handle regular expressions.
+* com.studionex.jrStepGUI.MainJPanel.MESSAGE_DELAY
+  Changed from 5 to 10 seconds and comment added there.
+  
+2010-09-20
+* First public release

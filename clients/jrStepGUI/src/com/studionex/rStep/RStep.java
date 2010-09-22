@@ -35,7 +35,7 @@ import java.util.TooManyListenersException;
  * @author  Jean-Louis Paquelin
  */
 public class RStep {
-	public static final long START_TIMEOUT = 5000; // 5 seconds
+	public static final long START_TIMEOUT = 10000; // 5 seconds
 
 	protected Serial serialPort;
 	
@@ -59,7 +59,7 @@ public class RStep {
 
 		if(isSerialConnected()) {
 			try {
-				expect("start", START_TIMEOUT);
+				expect("start|ok", START_TIMEOUT);
 			} catch (CommunicationException e) {
 				throw e;
 			} catch (ProtocolException e) {
@@ -104,11 +104,11 @@ public class RStep {
 		}
 	}
 	
-	protected void expect(String expected, long timeout) throws CommunicationException, ProtocolException {
+	protected void expect(String expectedRegex, long timeout) throws CommunicationException, ProtocolException {
 		try {
 			String reply = getSerialPort().waitForInput(timeout);
-			if((reply == null) || !reply.equals(expected))
-				throw new ProtocolException(reply, "got [" + reply + "] instead of [" + expected + "]");
+			if((reply == null) || !reply.matches(expectedRegex))
+				throw new ProtocolException(reply, "got [" + reply + "] instead of [" + expectedRegex + "]");
 		} catch (IOException e) {
 			throw new CommunicationException(e);
 		}
@@ -116,7 +116,7 @@ public class RStep {
 
 	public void sendExpectOk(String command) throws CommunicationException, ProtocolException {
 		try {
-			String expected = "ok";
+			String expected = ".+";
 			getSerialPort().send(command);
 			try {
 				expect(expected, 0); // no timeout, wait the reply for ever
