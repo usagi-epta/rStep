@@ -109,6 +109,7 @@ typedef struct config_t {
   struct u8_t  current; //M100
   uint8_t      stepping; //M103 Sx
   bool         abs_mode; //G90, G91
+  uint8_t      dir; //M104
 };
 
 

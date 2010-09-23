@@ -16,6 +16,7 @@
   struct u8_t  current; //M100
   uint8_t      stepping; //M103 Sx
   bool         abs_mode; //G90, G91
+  uint8_t      dir; //M104 [XYZ](0|1)
 };
 
  */
@@ -42,27 +43,27 @@ void config_read(void) {
 }
 
 void config_dump(void) {
-  Serial.print("Steps:"); 
+  Serial.print("St:"); 
   Serial.print(config.steps_inch.x,DEC);
   Serial.print(","); 
   Serial.print(config.steps_inch.y,DEC);
   Serial.print(","); 
   Serial.println(config.steps_inch.z,DEC);
-  Serial.print("Feed:"); 
+  Serial.print("Fe:"); 
   Serial.print(config.max_feedrate.x,DEC);
   Serial.print(","); 
   Serial.print(config.max_feedrate.y,DEC);
   Serial.print(","); 
   Serial.println(config.max_feedrate.z,DEC);
-  Serial.print("Current:"); 
+  Serial.print("Cu:"); 
   Serial.print(config.current.x,DEC);
   Serial.print(","); 
   Serial.print(config.current.y,DEC);
   Serial.print(","); 
   Serial.println(config.current.z,DEC);
-  Serial.print("Stepping:"); 
+  Serial.print("St:"); 
   Serial.println(config.stepping,DEC);
-  Serial.print("ABS:"); 
+  Serial.print("AB:"); 
   Serial.println(config.abs_mode,DEC);
 }
 

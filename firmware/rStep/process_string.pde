@@ -51,6 +51,7 @@ void process_string(uint8_t  *instruction) {
       if (command_exists('F')) r_move(getValue('F')); //feedrate persists till changed.
       else r_move( 0 );
       break;
+/*
     case 2://Clockwise arc
     case 3://Counterclockwise arc
       FloatPoint cent;
@@ -104,6 +105,7 @@ void process_string(uint8_t  *instruction) {
       }
 
       break;
+*/
     case 4: //Dwell
       //delay((int)getValue('P'));
       break;
@@ -181,7 +183,7 @@ void process_string(uint8_t  *instruction) {
     case 5: // turn off motor
       motor_off();
       break;      
-    case 82:
+  /*  case 82:
       DDRC |= _BV(1);
       PORTC &= ~_BV(1);
       DDRC &= ~_BV(0);
@@ -208,6 +210,7 @@ void process_string(uint8_t  *instruction) {
         }
       }
       break;
+      */
     case 100: //specify currents in AMPS
       if (command_exists('X')) 
       if (code = setCurrent(CHAN_X, getValue('X'))) config.current.x = code;
@@ -215,7 +218,6 @@ void process_string(uint8_t  *instruction) {
       if (code = setCurrent(CHAN_Y, getValue('Y'))) config.current.y = code;
       if (command_exists('Z')) 
       if (code = setCurrent(CHAN_Z, getValue('Z'))) config.current.z = code;
-
       config_save();
       break;
     case 101: //specify steps/inch
@@ -239,6 +241,12 @@ void process_string(uint8_t  *instruction) {
           config_save();
         }
       }
+      break;
+    case 104: //X(0|1) Y(0|1) Z(0|1) - set direction per axis
+      if (command_exists('X')) config.dir = (getValue('X')) ? (config.dir&~0x01) : (config.dir|0x01);
+      if (command_exists('Y')) config.dir = (getValue('Y')) ? (config.dir&~0x02) : (config.dir|0x02);
+      if (command_exists('Z')) config.dir = (getValue('Z')) ? (config.dir&~0x04) : (config.dir|0x04);
+      config_save();
       break;
     case 200:
       config_save();

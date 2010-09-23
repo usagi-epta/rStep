@@ -153,13 +153,13 @@ void calculate_deltas() {
 
     switch(i) {
     case 0: 
-      digitalWrite(DIR_X, (a->direction==FORWARD) ? LOW : HIGH); 
+      digitalWrite(DIR_X, (a->direction==FORWARD) ? (config.dir & 0x01) : !(config.dir & 0x01)); 
       break;
     case 1: 
-      digitalWrite(DIR_Y, (a->direction==FORWARD) ? LOW : HIGH); 
+      digitalWrite(DIR_Y, (a->direction==FORWARD) ? (config.dir & 0x02) : !(config.dir & 0x02)); 
       break;
     case 2: 
-      digitalWrite(DIR_Z, (a->direction==FORWARD) ? HIGH : LOW); 
+      digitalWrite(DIR_Z, (a->direction==FORWARD) ? (config.dir & 0x04) : !(config.dir & 0x04)); 
       break;
     }
   }
