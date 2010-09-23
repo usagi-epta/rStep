@@ -17,6 +17,7 @@
   uint8_t      stepping; //M103 Sx
   bool         abs_mode; //G90, G91
   uint8_t      dir; //M104 [XYZ](0|1)
+  uint8_t      motorSpeed; //M105 S(1-255)
 };
 
  */

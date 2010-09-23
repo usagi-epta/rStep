@@ -3,9 +3,11 @@ void motor_init(void) {
 }
 
 void motor_on(void) {
-  digitalWrite(MOTOR_PIN, HIGH); 
+  analogWrite(MOTOR_PIN, config.motorSpeed);
+ // digitalWrite(MOTOR_PIN, HIGH); 
 }
 
 void motor_off(void) {
-  digitalWrite(MOTOR_PIN, LOW);
+  analogWrite(MOTOR_PIN, 0);
+//  digitalWrite(MOTOR_PIN, LOW);
 }

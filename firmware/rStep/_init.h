@@ -110,6 +110,7 @@ typedef struct config_t {
   uint8_t      stepping; //M103 Sx
   bool         abs_mode; //G90, G91
   uint8_t      dir; //M104
+  uint8_t      motorSpeed; //M105 S(1-255)
 };
 
 

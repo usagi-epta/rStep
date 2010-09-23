@@ -248,6 +248,10 @@ void process_string(uint8_t  *instruction) {
       if (command_exists('Z')) config.dir = (getValue('Z')) ? (config.dir&~0x04) : (config.dir|0x04);
       config_save();
       break;
+    case 105: //S(1-255) set the PWM output for the motor speed
+      if (command_exists('S')) config.motorSpeed = getValue('S');
+      config_save();
+      break;
     case 200:
       config_save();
       break;
