@@ -28,7 +28,7 @@ void setup() {
 
   //init code
   config_read();
-//  mcp4351_init();
+  mcp4351_init();
   myStepper_init();
   motor_init();
   init_steppers();
