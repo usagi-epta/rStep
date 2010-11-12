@@ -1,6 +1,4 @@
 
-
-
 void bzero(uint8_t *ptr, uint8_t len) {
   for (uint8_t i=0; i<len; i++) ptr[i] = 0;
 }
@@ -87,16 +85,21 @@ void r_move(float feedrate) {
     if (axis_array[i]->delta_steps) {
       if (feedrate) a->timePerStep = duration / axis_array[i]->delta_steps;
       a->nextEvent = (a->timePerStep>>1); //1st event happens halfway though cycle.
-      Serial.println(a->timePerStep, DEC);
+      //Serial.println(a->timePerStep, DEC);
     } 
     else {
       a->nextEvent = 0xFFFFFFFF;
     }
   }
   
-
   myResetMicros();
-  starttime = myMicros();  
+  starttime = myMicros();
+#ifdef REPORT_DELAY
+  uint32_t nextProgressReport = millis() + REPORT_DELAY;
+  uint32_t xaxis_delta_steps = xaxis->delta_steps;
+  uint32_t yaxis_delta_steps = yaxis->delta_steps;
+  uint32_t zaxis_delta_steps = zaxis->delta_steps;
+#endif
   // start move
   while (xaxis->delta_steps || yaxis->delta_steps || zaxis->delta_steps) {
     a = nextEvent();
@@ -114,8 +117,19 @@ void r_move(float feedrate) {
     else {
       a->nextEvent = 0xFFFFFFFF; 
     }
-  }
 
+#ifdef REPORT_DELAY
+    // print the move progress each REPORT_DELAY milliseconds.
+    if (millis() > nextProgressReport) {
+      coordinatesMessage(
+        getLivePosition(0, xaxis_delta_steps),
+        getLivePosition(1, yaxis_delta_steps),
+        getLivePosition(2, zaxis_delta_steps));
+      nextProgressReport += REPORT_DELAY;
+    }
+#endif
+  }
+ 
   //we are at the target
   xaxis->current_units = xaxis->target_units;
   yaxis->current_units = yaxis->target_units;
@@ -125,6 +139,15 @@ void r_move(float feedrate) {
   //Serial.println("DDA_move finished");
   //intRestore(sreg);
 }
+
+#ifdef REPORT_DELAY
+float getLivePosition(int axis, uint32_t steps) {
+  return
+    axis_array[axis]->current_units +
+      ((axis_array[axis]->direction == FORWARD) ? 1.0 : -1.0) *
+        (float)(steps - axis_array[axis]->delta_steps) / (config.stepping * _units[axis]);
+}
+#endif
 
 void set_target(FloatPoint *fp){
   xaxis->target_units = fp->x;
@@ -192,8 +215,4 @@ uint16_t _getMaxFeedrate() {
   }
   return min(MAX_X_FEEDRATE, min(MAX_Y_FEEDRATE, MAX_Z_FEEDRATE));
 }
-
-
-
-
 

@@ -1,6 +1,11 @@
 #ifndef _INIT_
 #define _INIT_
 
+// rStep compilation configuration
+// PROGRESS_DELAY: The average time between two report messages (in milliseconds)
+// uncomment to enable this feature
+//#define REPORT_DELAY 5000
+
 //constants
 #define MAX_COMMANDS 8 //max arguments on one line
 #define COMMAND_SIZE 64 //max length of input command
@@ -86,13 +91,22 @@ struct axis_t {
   uint8_t step_pin;
   uint8_t direct_step_pin;
   uint8_t minMax_pin;
-  float current_units;
-  float target_units;
-  float delta_units;
-  uint32_t delta_steps;
-  uint16_t timePerStep;
-  int8_t direction; //FORWARD or BACKWARD
-  uint32_t nextEvent;
+
+  float current_units; // the current position on the axis
+  float target_units;  // the position to reach at the end of the current move
+  float delta_units;   // the relative position of target_units from the current_units position 
+                       // delta_units is updated by the calculate_deltas() function
+
+  uint32_t delta_steps; // the absolute number of steps (or µsteps) to travel through delta_units
+                        // the initial value is computed in the calculate_deltas() function,
+                        // then it's decreased while moving (in the r_move() function)
+  uint16_t timePerStep; // the number of µsec to achieve a move on this axis
+                        // this is computed in the r_move()
+                        
+  int8_t direction; // FORWARD or BACKWARD
+                    // equals BACKWARD, if delta_units < 0, or FORWARD otherwise
+  
+  uint32_t nextEvent; // delay (in µsec) to the next step on this axis (computed in the r_move() function)
 };
 typedef struct axis_t *axis;
 
@@ -104,17 +118,13 @@ struct command_t {
 typedef struct command_t *command;
 
 typedef struct config_t {
-  struct u16_t steps_inch; //M101
-  struct u8_t  max_feedrate; //M102
-  struct u8_t  current; //M100
-  uint8_t      stepping; //M103 Sx
-  bool         abs_mode; //G90, G91
-  uint8_t      dir; //M104
-  uint8_t      motorSpeed; //M105 S(1-255)
+  struct u16_t steps_inch;   // the number of steps per inch, set by M101
+  struct u8_t  max_feedrate; // the max feedrate, set by M102
+  struct u8_t  current;      // the stepper motors current (in amps), set by M100
+  uint8_t      stepping;     // the motors stepping (options are 1, 2, 4, 16), set by M103 Sx
+  bool         abs_mode;     // set by G90 or G91
+  uint8_t      dir;          // set by M104
+  uint8_t      motorSpeed;   // the PWM duty cycle of the stepper motors when they're on (allowed values are 1-255), set by M105 Sx
 };
-
-
-
-
 
 #endif
