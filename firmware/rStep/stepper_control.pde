@@ -85,7 +85,6 @@ void r_move(float feedrate) {
     if (axis_array[i]->delta_steps) {
       if (feedrate) a->timePerStep = duration / axis_array[i]->delta_steps;
       a->nextEvent = (a->timePerStep>>1); //1st event happens halfway though cycle.
-      //Serial.println(a->timePerStep, DEC);
     } 
     else {
       a->nextEvent = 0xFFFFFFFF;
