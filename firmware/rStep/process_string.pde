@@ -117,9 +117,9 @@ void process_string(uint8_t  *instruction) {
       calculate_deltas();
       break;
     case 21: //mm for Units
-      _units[0] = (uint16_t)((float)config.steps_inch.x / 22.4);
-      _units[1] = (uint16_t)((float)config.steps_inch.y / 22.4);
-      _units[2] = (uint16_t)((float)config.steps_inch.z / 22.4);
+      _units[0] = (uint16_t)((float)config.steps_inch.x / 25.4);
+      _units[1] = (uint16_t)((float)config.steps_inch.y / 25.4);
+      _units[2] = (uint16_t)((float)config.steps_inch.z / 25.4);
       curve_section = CURVE_SECTION_MM;
       calculate_deltas();
       break;
