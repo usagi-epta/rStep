@@ -5,13 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
+bool     quiet;
 uint8_t  command_word[COMMAND_SIZE];
 uint8_t  serial_count=0;
 uint16_t no_data = 0;
 axis     axis_array[3];
 struct   config_t config;
 FloatPoint zeros = {0.0,0.0,0.0};
+float feedrate;
 
 struct axis_t xaxis_data;
 struct axis_t yaxis_data;
@@ -22,6 +23,7 @@ axis yaxis;
 axis zaxis;
 
 void setup() {
+  quiet = true;
   Serial.begin(9600);
   pinMode(17, OUTPUT);// init led
   LED_ON();
@@ -35,10 +37,13 @@ void setup() {
   init_process_string();
   //increase clock resolution
   TCCR0B &= ~_BV(CS00); //for ATmega168!! XXX: this will mess up millis,micros,delay,delayMicroseconds
- 
+  
+  //set current system feedrate
+  feedrate = getMaxFeedrate();
+  
   //default configuration
-  process_string((uint8_t*)"G20"); //default in mm
- 
+  process_string((uint8_t*)"G21"); //default in mm
+  quiet = false;
   Serial.println("start");
 }
 

@@ -66,6 +66,7 @@ void r_move(float feedrate) {
   //uint8_t sreg = intDisable();
 
   if (!feedrate ) {
+    //compute max feedrate per axis
     xaxis->timePerStep = (double)(1E6*60.0) / (double)((double)config.max_feedrate.x * (double)config.steps_inch.x * (double)config.stepping);
     yaxis->timePerStep = (double)(1E6*60.0) / (double)((double)config.max_feedrate.y * (double)config.steps_inch.y * (double)config.stepping);
     zaxis->timePerStep = (double)(1E6*60.0) / (double)((double)config.max_feedrate.z * (double)config.steps_inch.z * (double)config.stepping);
@@ -100,6 +101,7 @@ void r_move(float feedrate) {
   uint32_t zaxis_delta_steps = zaxis->delta_steps;
 #endif
   // start move
+  
   while (xaxis->delta_steps || yaxis->delta_steps || zaxis->delta_steps) {
     a = nextEvent();
     while (myMicros() < (starttime + a->nextEvent) ); //wait till next action is required
@@ -166,7 +168,6 @@ void calculate_deltas() {
   //figure our deltas. 
   axis a;
   int i;
-
   for (i=0; i<3; i++) {
     a = axis_array[i];
     a->delta_units = a->target_units - a->current_units;
@@ -185,6 +186,14 @@ void calculate_deltas() {
       break;
     }
   }
+#ifdef DEBUG
+  Serial.print("DeltaSteps:");
+  Serial.print(axis_array[0]->delta_steps);
+  Serial.print(",");
+  Serial.print(axis_array[1]->delta_steps);
+  Serial.print(",");
+  Serial.println(axis_array[2]->delta_steps);
+#endif
 }
 
 

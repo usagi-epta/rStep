@@ -4,8 +4,8 @@
 //steps per inch or mm
 float _units[3];
 float curve_section;
-float feedrate = 0.0;
-long feedrate_micros = 0;
+
+
 
 void setXYZ(FloatPoint *fp) {
   fp->x = (command_exists('X')) ? (getValue('X') + ((config.abs_mode) ? 0 : xaxis->current_units)) :   
@@ -48,14 +48,18 @@ void process_string(uint8_t  *instruction) {
     case 1: //Coordinated Motion
       setXYZ(&fp);
       set_target(&fp);
-      if (command_exists('F')) r_move(getValue('F')); //feedrate persists till changed.
-      else r_move( 0 );
+      if (command_exists('F')) {
+        feedrate = getValue('F');
+        if (feedrate > getMaxFeedrate()) feedrate = getMaxFeedrate();
+      }
+      r_move( feedrate );
       break;
 /*
     case 2://Clockwise arc
     case 3://Counterclockwise arc
       FloatPoint cent;
       float angleA, angleB, angle, radius, length, aX, aY, bX, bY;
+      long feedrate_micros = 0;
 
       //Set fp Values
       setXYZ(&fp);
@@ -263,7 +267,7 @@ void process_string(uint8_t  *instruction) {
       Serial.println(code,DEC);
     }
   }
-  Serial.println("ok");//tell our host we're done.
+  if (!quiet) Serial.println("ok");//tell our host we're done.
 }
 
 
