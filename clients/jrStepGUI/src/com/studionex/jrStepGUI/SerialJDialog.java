@@ -34,7 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 
-import com.studionex.rStep.Serial;
+import com.studionex.rStep.input.Serial;
 
 @SuppressWarnings("serial")
 public class SerialJDialog extends JDialog {

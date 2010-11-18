@@ -29,8 +29,12 @@ import com.studionex.misc.ui.Console;
 
 @SuppressWarnings("serial")
 public class ConsoleJTabbedPane extends JTabbedPane {
-	public ConsoleJTabbedPane() {
+	private Application application;
+
+	public ConsoleJTabbedPane(Application application) {
 		super();
+		
+		this.application = application;
 	
 		buildUI();
 	}
@@ -38,7 +42,7 @@ public class ConsoleJTabbedPane extends JTabbedPane {
 	private void buildUI() {
 		Console outConsole = null;
 		try {
-			outConsole = new Console(Console.Streams.OUT);
+			outConsole = new Console(Console.SystemStreams.OUT);
 		} catch (IOException e) {
 			// TODO: log this?
 			e.printStackTrace();
@@ -48,12 +52,14 @@ public class ConsoleJTabbedPane extends JTabbedPane {
 
 		Console errConsole = null;
 		try {
-			errConsole = new Console(Console.Streams.ERR);
+			errConsole = new Console(Console.SystemStreams.ERR);
 		} catch (IOException e) {
 			// TODO: log this?
 			e.printStackTrace();
 		}
 		if(errConsole != null)
 			this.addTab("Messages", errConsole);
+		
+		this.addTab("Serial I/O", application.getSerialJPanelOutputStream().getJPanel());
 	}
 }

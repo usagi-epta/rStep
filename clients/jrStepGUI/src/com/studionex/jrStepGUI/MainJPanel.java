@@ -124,7 +124,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 						/* insets */ new Insets(0, 0, 0, 0),
 						/* ipadx */ 0, /* ipady */ 0));
 
-		consoleJTabbedPane = new ConsoleJTabbedPane();
+		consoleJTabbedPane = new ConsoleJTabbedPane(application);
 		this.add(consoleJTabbedPane,
 				new GridBagConstraints(
 						/* gridx */ 0, /* gridy */ 4,

@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.PrintStream;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -37,18 +38,24 @@ import com.studionex.jrStepGUI.rStep.RStep;
 import com.studionex.jrStepGUI.rStep.RStepEvent;
 import com.studionex.jrStepGUI.rStep.RStepEventListener;
 import com.studionex.jrStepGUI.rStep.RStepPlayerEvent;
+import com.studionex.misc.ui.JPanelOutputStream;
+import com.studionex.misc.ui.MySwingUtilities;
 
 @SuppressWarnings("serial")
 public class Application extends JFrame implements RStepEventListener {
 	private RStep rStep;
 	
 	private MainJPanel mainJPanel;
+	private JPanelOutputStream serialJPanelOutputStream;
+	
 	/**
 	 * Launches the application
 	 */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				MySwingUtilities.setNativeLookAndFeel();
+				
 				new Application();
 			}
 		});
@@ -57,19 +64,11 @@ public class Application extends JFrame implements RStepEventListener {
 	public Application() {
 		rStep = new RStep();
 		rStep.addEventListener(this);
+		// connect a PrintStream to monitor rStep I/Os
+		rStep.setSerialMonitor(new PrintStream(getSerialJPanelOutputStream(), true));
         		
-		setNativeLookAndFeel();
-		
-		// open a SerialJDialog that allows to choose and open
-		// the serial port on which rStep communicates
-		SerialJDialog serialJDialog = new SerialJDialog(this);
-		serialJDialog.setVisible(true);
-		
-		if(!rStep.isConnected())
-			System.exit(1);
-
 		mainJPanel = new MainJPanel(this);
-		mainJPanel.setUIState(MainJPanel.UIStates.MANUAL);
+		mainJPanel.setUIState(MainJPanel.UIStates.WAITING);
 		this.getContentPane().add(mainJPanel);
 		
 		this.addWindowListener(new ApplicationWindowEventHandler());
@@ -81,6 +80,16 @@ public class Application extends JFrame implements RStepEventListener {
 		displayCentered(this); 
 		
 		this.setVisible(true);
+
+		// open a SerialJDialog that allows to choose and open
+		// the serial port on which rStep communicates
+		SerialJDialog serialJDialog = new SerialJDialog(this);
+		serialJDialog.setVisible(true);
+		
+		if(!rStep.isConnected())
+			System.exit(1);
+
+		mainJPanel.setUIState(MainJPanel.UIStates.MANUAL);
 	}
 	
 	public RStep getRStep() {
@@ -92,30 +101,15 @@ public class Application extends JFrame implements RStepEventListener {
 		return getRStep().isConnected();
 	}
 	
-	private void setNativeLookAndFeel() {
-		// Get the native look and feel class name
-		String nativeLF = UIManager.getSystemLookAndFeelClassName();
-		// Install the look and feel
-		try {
-			UIManager.setLookAndFeel(nativeLF);
-		} catch (ClassNotFoundException e) {
-			// TODO: log this?
-			//e.printStackTrace();
-		} catch (InstantiationException e) {
-			// TODO: log this?
-			//e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO: log this?
-			//e.printStackTrace();
-		} catch (UnsupportedLookAndFeelException e) {
-			// TODO: log this?
-			//e.printStackTrace();
-		}
-	}
-	
 	public void errorDialog(String message) {
 		JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION);
 		optionPane.createDialog(this, null).setVisible(true); 
+	}
+	
+	public JPanelOutputStream getSerialJPanelOutputStream() {
+		if(serialJPanelOutputStream == null)
+			serialJPanelOutputStream = new JPanelOutputStream();
+		return serialJPanelOutputStream;
 	}
 	
 	public void displayCentered(Component component) {
@@ -155,7 +149,7 @@ public class Application extends JFrame implements RStepEventListener {
 			errorDialog("An error occured while receiving data from rStep");
 			break;
 		case PROTOCOL_EXCEPTION:
-			errorDialog("rStep doesn't reply properly, try to reset it");
+			errorDialog("PROTOCOL_EXCEPTION: " + rStepEvent.toString() + "\nrStep doesn't reply properly, try to reset it");
 			break;
 		case OTHER:
 			if(rStepEvent instanceof RStepPlayerEvent) {

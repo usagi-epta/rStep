@@ -4,7 +4,26 @@ import gnu.io.PortInUseException;
 import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.TooManyListenersException;
+
+import com.studionex.event.EventManager;
+import com.studionex.jrStepGUI.rStep.RStepEvent;
+import com.studionex.jrStepGUI.rStep.RStepEventListener;
+import com.studionex.rStep.input.AbsoluteModeMessageEvent;
+import com.studionex.rStep.input.CoordinatesMessageEvent;
+import com.studionex.rStep.input.CurrentMessageEvent;
+import com.studionex.rStep.input.DebugMessageEvent;
+import com.studionex.rStep.input.FeedRateMessageEvent;
+import com.studionex.rStep.input.InputEvent;
+import com.studionex.rStep.input.InputEventListener;
+import com.studionex.rStep.input.InputParser;
+import com.studionex.rStep.input.StepByInchMessageEvent;
+import com.studionex.rStep.input.SteppingMessageEvent;
+import com.studionex.rStep.input.ReplyEvent;
+import com.studionex.rStep.input.Serial;
+import com.studionex.rStep.input.StartEvent;
+import com.studionex.rStep.input.SyntaxMessageEvent;
 
 
 /*
@@ -34,19 +53,28 @@ import java.util.TooManyListenersException;
  *
  * @author  Jean-Louis Paquelin
  */
-public class RStep {
+public class RStep implements InputEventListener {
 	public static final long START_TIMEOUT = 10000; // 5 seconds
 
 	protected Serial serialPort;
+	protected InputParser inputParser;
+	protected PrintStream monitorStream;
 	
 	private boolean hasStarted = false;
+	
+	private Boolean gotStart = false;
+	private Boolean gotOk = false;
 	
 	public void connect(String serialPortName) throws ConnectionException, CommunicationException, ProtocolException {
 		if(isConnected())
 			disconnect();
 		
+		inputParser = new InputParser();
+		inputParser.add(this);
+		
 		try {
-			serialPort = new Serial(serialPortName);
+			serialPort = new Serial(serialPortName, inputParser);
+			serialPort.setMonitor(monitorStream);
 		} catch (PortInUseException e) {
 			throw new ConnectionException(e);
 		} catch (IOException e) {
@@ -57,15 +85,28 @@ public class RStep {
 			throw new ConnectionException(e);
 		}
 
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		if(isSerialConnected()) {
-			try {
-				expect("start|ok", START_TIMEOUT);
-			} catch (CommunicationException e) {
-				throw e;
-			} catch (ProtocolException e) {
-				throw e;
+			synchronized(this) {
+				try {
+					while(!gotStart) {
+					this.wait(START_TIMEOUT);
+					}
+				} catch (InterruptedException e) {
+					// TODO: log this?
+					//e.printStackTrace();
+				}
+				if(!gotStart)
+					throw new ProtocolException("no START", "ain't got START");
+				else
+					hasStarted = true;
 			}
-			hasStarted = true;
 		}
 	}
 
@@ -104,31 +145,85 @@ public class RStep {
 		}
 	}
 	
-	protected void expect(String expectedRegex, long timeout) throws CommunicationException, ProtocolException {
-		try {
-			String reply = getSerialPort().waitForInput(timeout);
-			if((reply == null) || !reply.matches(expectedRegex))
-				throw new ProtocolException(reply, "got [" + reply + "] instead of [" + expectedRegex + "]");
-		} catch (IOException e) {
-			throw new CommunicationException(e);
-		}
+	public void setSerialMonitor(PrintStream monitorStream) {
+		this.monitorStream = monitorStream;
+		if(getSerialPort() != null)
+			getSerialPort().setMonitor(monitorStream);
 	}
-
+	
 	public void sendExpectOk(String command) throws CommunicationException, ProtocolException {
 		try {
-			String expected = ".+";
 			getSerialPort().send(command);
-			try {
-				expect(expected, 0); // no timeout, wait the reply for ever
-			} catch (ProtocolException e) {
-				throw new ProtocolException(e.getProtocolError(), 
-						"while sending [" + command + "] got [" + e.getProtocolError() + "] instead of [" + expected + "]");
+			synchronized(this) {
+				try {
+					this.wait(START_TIMEOUT);
+				} catch (InterruptedException e) {
+					// TODO: log this?
+					//e.printStackTrace();
+				}
+				if(!gotOk)
+					throw new ProtocolException("no Ok", "while sending [" + command + "] ain't got [OK]");
+				else
+					gotOk = false;
 			}
 		} catch (IOException e) {
 			throw new CommunicationException(e);
 		}
 	}
 	
+	public void add(InputEventListener eventListener) {
+		inputParser.add(eventListener);
+	}
+
+	public void remove(InputEventListener eventListener) {
+		inputParser.remove(eventListener);
+	}
+
+	public void eventHandler(InputEvent inputEvent) {
+		if(inputEvent instanceof ReplyEvent) {
+			ReplyEvent replyEvent = (ReplyEvent)inputEvent;
+			
+			if(replyEvent.isOk())
+				synchronized(this) {
+					gotOk = true;
+					this.notify();
+				}
+		} else if(inputEvent instanceof CoordinatesMessageEvent) {
+			CoordinatesMessageEvent messageEvent = (CoordinatesMessageEvent)inputEvent;
+			System.out.println(messageEvent);
+			
+		} else if(inputEvent instanceof DebugMessageEvent) {
+			DebugMessageEvent messageEvent = (DebugMessageEvent)inputEvent;
+			System.err.println(messageEvent);
+			
+		} else if(inputEvent instanceof AbsoluteModeMessageEvent) {
+			AbsoluteModeMessageEvent messageEvent = (AbsoluteModeMessageEvent)inputEvent;
+			
+		} else if(inputEvent instanceof CurrentMessageEvent) {
+			CurrentMessageEvent messageEvent = (CurrentMessageEvent)inputEvent;
+			
+		} else if(inputEvent instanceof FeedRateMessageEvent) {
+			FeedRateMessageEvent messageEvent = (FeedRateMessageEvent)inputEvent;
+			
+		} else if(inputEvent instanceof StepByInchMessageEvent) {
+			StepByInchMessageEvent messageEvent = (StepByInchMessageEvent)inputEvent;
+			
+		} else if(inputEvent instanceof SteppingMessageEvent) {
+			SteppingMessageEvent messageEvent = (SteppingMessageEvent)inputEvent;
+			
+		} else if(inputEvent instanceof StartEvent) {
+			synchronized(this) {
+				gotOk = false;
+				gotStart = true;
+				this.notify();
+			}
+		} else if(inputEvent instanceof SyntaxMessageEvent) {
+			SyntaxMessageEvent messageEvent = (SyntaxMessageEvent)inputEvent;
+			System.err.println(messageEvent);
+			
+		}
+	}
+
 	@Override
 	protected void finalize() throws Throwable {
 	    try {

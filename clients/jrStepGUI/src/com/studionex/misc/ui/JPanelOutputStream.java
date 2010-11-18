@@ -31,63 +31,49 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 
-/**
- * @see http://unserializableone.blogspot.com/2009/01/redirecting-systemout-and-systemerr-to.html
- */
-@SuppressWarnings("serial")
-public class Console extends JPanel {
+public class JPanelOutputStream extends OutputStream {
 	public static final int DEFAULT_BUFFER_SIZE = 10000;
 	
-	public enum SystemStreams {OUT, ERR, OUTERR};
-	private SystemStreams stream;
-
+	private JPanel jPanel;
 	private JTextArea jTextArea;
+
 	private int bufferSize;
 
-	public Console(SystemStreams stream) throws IOException {
-		this(stream, DEFAULT_BUFFER_SIZE);
-    }
+	public JPanelOutputStream() {
+		this(DEFAULT_BUFFER_SIZE);
+	}
 	
-	public Console(SystemStreams stream, int bufferSize) throws IOException {
+	public JPanelOutputStream(int bufferSize) {
+		super();
+		
 		// Add a scrolling text area
 		jTextArea = new JTextArea();
 		jTextArea.setEditable(false);
-		this.setLayout(new GridLayout(1, 1));
-		this.add(new JScrollPane(jTextArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
-		setVisible(true);
+		jPanel = new JPanel();
+		jPanel.setLayout(new GridLayout(1, 1));
+		jPanel.add(new JScrollPane(jTextArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+		jPanel.setVisible(true);
 
-		this.stream = stream;
 		this.bufferSize = bufferSize;
-		redirectSystemStreams();
     }
 	
-	private void redirectSystemStreams() {
-		OutputStream out = new OutputStream() {
-			@Override
-			public void write(int b) throws IOException {
-				updateTextArea(String.valueOf((char) b));
-			}
+	public JPanel getJPanel() {
+		return jPanel;
+	}
+	
+	@Override
+	public void write(int b) throws IOException {
+		updateTextArea(String.valueOf((char) b));
+	}
 
-			@Override
-			public void write(byte[] b, int off, int len) throws IOException {
-				updateTextArea(new String(b, off, len));
-			}
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		updateTextArea(new String(b, off, len));
+	}
 
-			@Override
-			public void write(byte[] b) throws IOException {
-				write(b, 0, b.length);
-			}
-		};
-
-		if(stream != SystemStreams.ERR) {
-			// Set up System.out
-			System.setOut(new PrintStream(out, true));
-		}
-		
-		if(stream != SystemStreams.OUT) {
-			// Set up System.err
-			System.setErr(new PrintStream(out, true));
-		}
+	@Override
+	public void write(byte[] b) throws IOException {
+		write(b, 0, b.length);
 	}
 
 	private void updateTextArea(final String text) {
@@ -126,27 +112,25 @@ public class Console extends JPanel {
 				JFrame jFrame = new JFrame();
 				jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				
-				try {
-					Console outConsole = new Console(Console.SystemStreams.OUT, 500);
-					jFrame.getContentPane().add(outConsole);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				final JPanelOutputStream jPanelOutputStream = new JPanelOutputStream(500);
+				jFrame.getContentPane().add(jPanelOutputStream.getJPanel());
 				jFrame.setSize(640, 480);
 				jFrame.setVisible(true);
 				
 				(new Thread() {
 
 					public void run() {
+						PrintStream printStream = new PrintStream(jPanelOutputStream);
+						
 						int i = 0;
 						while(true) {
-							System.out.print("i = " + (i++));
+							printStream.print("i = " + (i++));
 							try {
 								Thread.sleep(100);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
-							System.out.println(" 0123456789");
+							printStream.println(" 0123456789");
 						}
 					}
 				}).start();

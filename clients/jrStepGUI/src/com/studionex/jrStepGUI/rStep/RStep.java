@@ -22,6 +22,7 @@ package com.studionex.jrStepGUI.rStep;
  */
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.Vector;
 
 import com.studionex.event.EventManager;
@@ -84,6 +85,14 @@ public class RStep implements RStepEventListener {
 	}
 
 	/**
+	 * Hooks up a PrintStream to monitor the rStep I/Os.
+	 * @param monitorStream
+	 */
+	public void setSerialMonitor(PrintStream monitorStream) {
+		getRStep().setSerialMonitor(monitorStream);
+	}
+	
+	/**
 	 * This method sends command string to rStep.
 	 * It splits the command on G and M codes and sends each one by one.
 	 *  
@@ -123,22 +132,17 @@ public class RStep implements RStepEventListener {
 	 * @param command
 	 */
 	private void sendExpectOkNoSplit(String command) {
-		System.out.print(command);
-		System.out.flush();
-		
 		try {
 			getRStep().sendExpectOk(command);
-			System.out.println(" :: ok");
 		} catch (CommunicationException e) {
 			e.printStackTrace();
-			System.out.println(" [an error occured while exchanging data with rStep]");
+			System.out.println("[an error occured while exchanging data with rStep]");
 			// pause player
 			if(playerIsPlaying())
 				playerPause();
 		} catch (ProtocolException e) {
 			String reply = e.getProtocolError();
 			System.err.println(e.getMessage());
-			System.out.println(" :: " + (reply == null ? "no reply" : reply));
 		}
 	}
 

@@ -1,6 +1,20 @@
-This file is part of the jrStepGUI project.
+This file is part of the jrStepGUI software.
 
 Copyright 2010 Jean-Louis Paquelin
+
+jrStepGUI is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+ 
+jrStepGUI is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with jrStepGUI. If not, see <http://www.gnu.org/licenses/>.
+
 Contact info: jrstepgui@studionex.com
 
 INTRODUCTION
@@ -12,7 +26,7 @@ installation documentation.
 jrStepGUI is a Java rStep Graphic User Interface. It is supposed to be
 platform independent. Actually, it depends on the availability of the RXTX
 library which handles the serial communications between a computer and the
-Arduino.
+Arduino (or the rStep hardware).
 
 INSTALLATION
 
@@ -39,6 +53,16 @@ btw, you need a working JRE 1.5 or greater.
 Once the library is installed, you'll just have to run jrStepGUI.jar.
 
 STORY
+
+2010-10-10
+* Updated README file.
+* Now the rStep output is handled by the Serial and the InputParser Java
+  classes. While Serial runs the rStep I/O, InputParser parses the data sent
+  by rStep then call the appropriate listeners and send them an event.
+
+2010-10-08
+* Console code is completely rewritten. It is much more efficient and reactive
+  than the previous version.
 
 2010-09-22
 * com.studionex.rStep.RStep.expect(String, long)
