@@ -25,11 +25,15 @@ void process_string(uint8_t  *instruction) {
   float temp;
   //command commands = NULL;
   FloatPoint fp;
+  
+  boolean returnOk = false;
+    // this should be turned to true if the command processed terminates properly
 
 
   //the character / means delete block... used for comments and stuff.
   if (instruction[0] == '/') 	{
-    Serial.println("ok");
+    Serial.println("OK");
+    // this may return silently instead of OK, no?
     return;
   }
 
@@ -44,7 +48,9 @@ void process_string(uint8_t  *instruction) {
       setXYZ(&fp);
       set_target(&fp);
       r_move(0); //fast motion in all axis
+      returnOk = true;
       break;
+
     case 1: //Coordinated Motion
       setXYZ(&fp);
       set_target(&fp);
@@ -53,6 +59,7 @@ void process_string(uint8_t  *instruction) {
         if (feedrate > getMaxFeedrate()) feedrate = getMaxFeedrate();
       }
       r_move( feedrate );
+      returnOk = true;
       break;
 /*
     case 2://Clockwise arc
@@ -107,30 +114,38 @@ void process_string(uint8_t  *instruction) {
         // Make step
         r_move(feedrate_micros);
       }
-
+      returnOk = true;
       break;
 */
     case 4: //Dwell
       //delay((int)getValue('P'));
+      returnOk = true;
       break;
+
     case 20: //Inches for Units
       _units[0] = config.steps_inch.x;
       _units[1] = config.steps_inch.y;
       _units[2] = config.steps_inch.z;
       curve_section = CURVE_SECTION_INCHES;
       calculate_deltas();
+      returnOk = true;
       break;
+
     case 21: //mm for Units
       _units[0] = (uint16_t)((float)config.steps_inch.x / 25.4);
       _units[1] = (uint16_t)((float)config.steps_inch.y / 25.4);
       _units[2] = (uint16_t)((float)config.steps_inch.z / 25.4);
       curve_section = CURVE_SECTION_MM;
       calculate_deltas();
+      returnOk = true;
       break;
+
     case 28: //go home.
       set_target(&zeros);
       r_move(getMaxFeedrate());
+      returnOk = true;
       break;
+
     case 30://go home via an intermediate point.
       //Set Target
       setXYZ(&fp);
@@ -140,7 +155,9 @@ void process_string(uint8_t  *instruction) {
       //go home.
       set_target(&zeros);
       r_move(getMaxFeedrate());
+      returnOk = true;
       break;
+
     case 81: // drilling operation
       temp = zaxis->current_units;
       //Move only in the XY direction
@@ -157,24 +174,39 @@ void process_string(uint8_t  *instruction) {
       zaxis->target_units = temp;
       calculate_deltas();
       r_move(getMaxFeedrate());
+      returnOk = true;
+      break;
+
     case 90://Absolute Positioning
       config.abs_mode = true;
       config_save();
+      returnOk = true;
       break;
+
     case 91://Incremental Positioning
       config.abs_mode = false;
       config_save();
+      returnOk = true;
       break;
+
     case 92://Set as home
       set_position(&zeros);
+      returnOk = true;
       break;
+
     case 93://Inverse Time Feed Mode
+      Serial.println("ERR NOT_SUPPORTED");
       break;  //TODO: add this 
+
     case 94://Feed per Minute Mode
+      Serial.println("ERR NOT_SUPPORTED");
       break;  //TODO: add this
+
     default:
-      Serial.print("huh? G");
-      Serial.println(code,DEC);
+      Serial.println("ERR NOT_SUPPORTED");
+// ERR NOT_SUPPORTED is less friendly than the next lines
+//      Serial.print("huh? G");
+//      Serial.println(code,DEC);
     }
   }
   if (command_exists('M')) {
@@ -183,10 +215,14 @@ void process_string(uint8_t  *instruction) {
     case 3: // turn on motor
     case 4:
       motor_on();
+      returnOk = true;
       break;
+
     case 5: // turn off motor
       motor_off();
-      break;      
+      returnOk = true;
+      break;
+
   /*  case 82:
       DDRC |= _BV(1);
       PORTC &= ~_BV(1);
@@ -223,19 +259,25 @@ void process_string(uint8_t  *instruction) {
       if (command_exists('Z')) 
       if (code = setCurrent(CHAN_Z, getValue('Z'))) config.current.z = code;
       config_save();
+      returnOk = true;
       break;
+
     case 101: //specify steps/inch
       if (command_exists('X')) config.steps_inch.x = getValue('X');
       if (command_exists('Y')) config.steps_inch.y = getValue('Y');
       if (command_exists('Z')) config.steps_inch.z = getValue('Z');
       config_save();
+      returnOk = true;
       break;
+
     case 102: //specify max feedrate
       if (command_exists('X')) config.max_feedrate.x = getValue('X');
       if (command_exists('Y')) config.max_feedrate.y = getValue('Y');
       if (command_exists('Z')) config.max_feedrate.z = getValue('Z');
       config_save();
+      returnOk = true;
       break;
+
     case 103: //M99 S{1,2,4,16} -- set stepping mode
       if (command_exists('S')) {
         code = getValue('S');
@@ -245,29 +287,42 @@ void process_string(uint8_t  *instruction) {
           config_save();
         }
       }
+      returnOk = true;
       break;
+
     case 104: //X(0|1) Y(0|1) Z(0|1) - set direction per axis
       if (command_exists('X')) config.dir = (getValue('X')) ? (config.dir&~0x01) : (config.dir|0x01);
       if (command_exists('Y')) config.dir = (getValue('Y')) ? (config.dir&~0x02) : (config.dir|0x02);
       if (command_exists('Z')) config.dir = (getValue('Z')) ? (config.dir&~0x04) : (config.dir|0x04);
       config_save();
+      returnOk = true;
       break;
+
     case 105: //S(1-255) set the PWM output for the motor speed
       if (command_exists('S')) config.motorSpeed = getValue('S');
       config_save();
+      returnOk = true;
       break;
+
     case 200:
       config_save();
+      returnOk = true;
       break;
+
     case 201:
       config_dump();
+      returnOk = true;
       break;
+
     default:
-      Serial.print("huh? M");
-      Serial.println(code,DEC);
+      Serial.println("ERR NOT_SUPPORTED");
+// ERR NOT_SUPPORTED is less friendly than the next lines
+//      Serial.print("huh? M");
+//      Serial.println(code,DEC);
     }
   }
-  if (!quiet) Serial.println("ok");//tell our host we're done.
+  if (returnOk && !quiet)
+    Serial.println("OK");//tell our host we're done.
 }
 
 

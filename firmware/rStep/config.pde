@@ -43,27 +43,10 @@ void config_read(void) {
 }
 
 void config_dump(void) {
-  Serial.print("St:"); 
-  Serial.print(config.steps_inch.x,DEC);
-  Serial.print(","); 
-  Serial.print(config.steps_inch.y,DEC);
-  Serial.print(","); 
-  Serial.println(config.steps_inch.z,DEC);
-  Serial.print("Fe:"); 
-  Serial.print(config.max_feedrate.x,DEC);
-  Serial.print(","); 
-  Serial.print(config.max_feedrate.y,DEC);
-  Serial.print(","); 
-  Serial.println(config.max_feedrate.z,DEC);
-  Serial.print("Cu:"); 
-  Serial.print(config.current.x,DEC);
-  Serial.print(","); 
-  Serial.print(config.current.y,DEC);
-  Serial.print(","); 
-  Serial.println(config.current.z,DEC);
-  Serial.print("St:"); 
-  Serial.println(config.stepping,DEC);
-  Serial.print("AB:"); 
-  Serial.println(config.abs_mode,DEC);
+  Message3F("SBI", config.steps_inch.x, config.steps_inch.y, config.steps_inch.z, DEC);
+  Message3F("MFR", config.max_feedrate.x, config.max_feedrate.y, config.max_feedrate.z, DEC);
+  Message3F("Cur", config.current.x, config.current.y, config.current.z, DEC);
+  Message1F("Step", config.stepping, DEC);
+  Message1F("Abs", config.abs_mode, DEC);
 }
 

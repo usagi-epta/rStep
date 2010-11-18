@@ -1,6 +1,7 @@
 #include <EEPROM.h>
 #include <inttypes.h>
 #include "_init.h"
+#include "messages.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,7 +45,7 @@ void setup() {
   //default configuration
   process_string((uint8_t*)"G21"); //default in mm
   quiet = false;
-  Serial.println("start");
+  Serial.println("START");
 }
 
 void init_process_string() {

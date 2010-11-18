@@ -49,7 +49,7 @@ void mcp4351_init(void) {
       return;
     }
   }
-  Serial.println("INIT_ERR");
+  Serial.println("ERR INIT");
   while(1); //lock up device as we can't set the currents
 }
 
@@ -65,7 +65,7 @@ uint8_t mcp4351_setWiper(uint8_t wiper, uint16_t value) {
   digitalWrite(MSP4351_CS, HIGH);
   SPI_OFF();
   if (a!=0xFF || b!=0xFF) {
-    Serial.println("ERR_CUR");
+    Serial.println("ERR CUR");
     return false;
   }
   return true;
