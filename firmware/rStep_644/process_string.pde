@@ -54,62 +54,61 @@ void process_string(uint8_t  *instruction) {
       }
       r_move( feedrate );
       break;
-/*
     case 2://Clockwise arc
     case 3://Counterclockwise arc
-      FloatPoint cent;
-      float angleA, angleB, angle, radius, length, aX, aY, bX, bY;
-      long feedrate_micros = 0;
+      {
+        FloatPoint cent;
+        float angleA, angleB, angle, radius, length, aX, aY, bX, bY;
+        long feedrate_micros = 0;
 
-      //Set fp Values
-      setXYZ(&fp);
-      // Centre coordinates are always relative
-      cent.x = xaxis->current_units + getValue('I');
-      cent.y = yaxis->current_units + getValue('J');
+        //Set fp Values
+        setXYZ(&fp);
+        // Centre coordinates are always relative
+        cent.x = xaxis->current_units + getValue('I');
+        cent.y = yaxis->current_units + getValue('J');
 
-      aX = (xaxis->current_units - cent.x);
-      aY = (yaxis->current_units - cent.y);
-      bX = (fp.x - cent.x);
-      bY = (fp.y - cent.y);
+        aX = (xaxis->current_units - cent.x);
+        aY = (yaxis->current_units - cent.y);
+        bX = (fp.x - cent.x);
+        bY = (fp.y - cent.y);
 
-      if (code == 2) { // Clockwise
-        angleA = atan2(bY, bX);
-        angleB = atan2(aY, aX);
-      } 
-      else { // Counterclockwise
-        angleA = atan2(aY, aX);
-        angleB = atan2(bY, bX);
+        if (code == 2) { // Clockwise
+          angleA = atan2(bY, bX);
+          angleB = atan2(aY, aX);
+        } 
+        else { // Counterclockwise
+          angleA = atan2(aY, aX);
+          angleB = atan2(bY, bX);
+        }
+
+        // Make sure angleB is always greater than angleA
+        // and if not add 2PI so that it is (this also takes
+        // care of the special case of angleA == angleB,
+        // ie we want a complete circle)
+        if (angleB <= angleA) angleB += 2 * M_PI;
+        angle = angleB - angleA;
+
+        radius = sqrt(aX * aX + aY * aY);
+        length = radius * angle;
+        int steps, s, step;
+        steps = (int) ceil(length / curve_section);
+
+        FloatPoint newPoint;
+        for (s = 1; s <= steps; s++) {
+          step = (code == 3) ? s : steps - s; // Work backwards for CW
+          newPoint.x = cent.x + radius * cos(angleA + angle * ((float) step / steps));
+          newPoint.y = cent.y + radius * sin(angleA + angle * ((float) step / steps));
+          newPoint.z = zaxis->current_units;
+          set_target(&newPoint);
+
+          // Need to calculate rate for each section of curve
+          feedrate_micros = (feedrate > 0) ? feedrate : getMaxFeedrate();
+
+          // Make step
+          r_move(feedrate_micros);
+        }
       }
-
-      // Make sure angleB is always greater than angleA
-      // and if not add 2PI so that it is (this also takes
-      // care of the special case of angleA == angleB,
-      // ie we want a complete circle)
-      if (angleB <= angleA) angleB += 2 * M_PI;
-      angle = angleB - angleA;
-
-      radius = sqrt(aX * aX + aY * aY);
-      length = radius * angle;
-      int steps, s, step;
-      steps = (int) ceil(length / curve_section);
-
-      FloatPoint newPoint;
-      for (s = 1; s <= steps; s++) {
-        step = (code == 3) ? s : steps - s; // Work backwards for CW
-        newPoint.x = cent.x + radius * cos(angleA + angle * ((float) step / steps));
-        newPoint.y = cent.y + radius * sin(angleA + angle * ((float) step / steps));
-        newPoint.z = zaxis->current_units;
-        set_target(&newPoint);
-
-        // Need to calculate rate for each section of curve
-        feedrate_micros = (feedrate > 0) ? feedrate : getMaxFeedrate();
-
-        // Make step
-        r_move(feedrate_micros);
-      }
-
       break;
-*/
     case 4: //Dwell
       //delay((int)getValue('P'));
       break;
@@ -187,41 +186,41 @@ void process_string(uint8_t  *instruction) {
     case 5: // turn off motor
       motor_off();
       break;      
-  /*  case 82:
-      DDRC |= _BV(1);
-      PORTC &= ~_BV(1);
-      DDRC &= ~_BV(0);
-      PORTC |= _BV(0);
-      // setup initial position
-      for (int i=0; i<20; i++) {
-        k=0;
-        PORTB |= _BV(5); //go down
-        while(PINC & _BV(0)) {
-          PORTB |= _BV(2);
-          delayMicroseconds(1);
-          PORTB &= ~_BV(2);
-          delayMicroseconds(200);
-          k++;
-        }
-        //print result for this point
-        Serial.println(k,DEC);
-        PORTB &= ~_BV(5);  //move up to origin        
-        while (k--) {
-          PORTB |= _BV(2);
-          delayMicroseconds(1);
-          PORTB &= ~_BV(2);
-          delayMicroseconds(12.5*config.stepping);
-        }
-      }
-      break;
-      */
+      /*  case 82:
+       DDRC |= _BV(1);
+       PORTC &= ~_BV(1);
+       DDRC &= ~_BV(0);
+       PORTC |= _BV(0);
+       // setup initial position
+       for (int i=0; i<20; i++) {
+       k=0;
+       PORTB |= _BV(5); //go down
+       while(PINC & _BV(0)) {
+       PORTB |= _BV(2);
+       delayMicroseconds(1);
+       PORTB &= ~_BV(2);
+       delayMicroseconds(200);
+       k++;
+       }
+       //print result for this point
+       Serial.println(k,DEC);
+       PORTB &= ~_BV(5);  //move up to origin        
+       while (k--) {
+       PORTB |= _BV(2);
+       delayMicroseconds(1);
+       PORTB &= ~_BV(2);
+       delayMicroseconds(12.5*config.stepping);
+       }
+       }
+       break;
+       */
     case 100: //specify currents in AMPS
       if (command_exists('X')) 
-      if (code = setCurrent(CHAN_X, getValue('X'))) config.current.x = code;
+        if (code = setCurrent(CHAN_X, getValue('X'))) config.current.x = code;
       if (command_exists('Y')) 
-      if (code = setCurrent(CHAN_Y, getValue('Y'))) config.current.y = code;
+        if (code = setCurrent(CHAN_Y, getValue('Y'))) config.current.y = code;
       if (command_exists('Z')) 
-      if (code = setCurrent(CHAN_Z, getValue('Z'))) config.current.z = code;
+        if (code = setCurrent(CHAN_Z, getValue('Z'))) config.current.z = code;
       config_save();
       break;
     case 101: //specify steps/inch
@@ -269,6 +268,7 @@ void process_string(uint8_t  *instruction) {
   }
   if (!quiet) Serial.println("ok");//tell our host we're done.
 }
+
 
 
 

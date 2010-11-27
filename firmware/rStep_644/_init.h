@@ -35,40 +35,47 @@
 #define intDisable()      ({ uint8_t sreg = SREG; cli(); sreg; })
 #define intRestore(sreg)  SREG = sreg 
 #define myMicros() (micros() >> 3)
-#define LED_ON() digitalWrite(17,LOW);
-#define LED_OFF() digitalWrite(17,HIGH);
 //pin definitions
 /****************************************************************************************/
 //my config
-#define ENABLE 18 //low enabled
-#define MS1 2
-#define MS2 4
+#define ENABLE 2 //low enabled
+#define MS1 17
+#define MS2 16
 #define RST 3 
 #define SLP 3
-#define STEP_X 9
-#define STEP_Y 10
-#define STEP_Z 11
-#define DIR_X 8
-#define DIR_Y 12
-#define DIR_Z 19
-#define MOTOR_PIN 6
+#define STEP_X 14
+#define STEP_Y 12
+#define STEP_Z 10
+#define DIR_X 15
+#define DIR_Y 13
+#define DIR_Z 11
+#define MOTOR_PIN 1
+
+#define LED1 27
+#define LED2 30
+
+#define SCK 7
+#define MOSI 5
+#define MISO 6
+#define SS 4
+#define MSP4351_CS 4
 
 /* specify the port and pin numbers - you need to look this up 
 ** on the schematic for the particular arduino */
-#define _STEP_PORT PORTB
-#define _STEP_DDR  DDRB
-#define _STEP_X    (1<<1)
-#define _STEP_Y    (1<<2)
-#define _STEP_Z    (1<<3)
+#define _STEP_PORT PORTD
+#define _STEP_DDR  DDRD
+#define _STEP_X    (1<<6)
+#define _STEP_Y    (1<<4)
+#define _STEP_Z    (1<<2)
 
 
 // specify min-max sense pins or 0 if not used
 // active low is prefered as it will cause the AVR to use it's internal pullups to 
 // avoid bounce on the line.  If you want active_high, then you must add external pulldowns
 // to avoid false signals.
-#define MINMAX_X 7 
-#define MINMAX_Y 15
-#define MINMAX_Z 5
+#define MINMAX_X 23
+#define MINMAX_Y 22
+#define MINMAX_Z 26
 
 // STRUCTURES
 struct u16_t {
@@ -126,5 +133,12 @@ typedef struct config_t {
   uint8_t      dir;          // set by M104
   uint8_t      motorSpeed;   // the PWM duty cycle of the stepper motors when they're on (allowed values are 1-255), set by M105 Sx
 };
+
+/* LED */
+
+#define LED1_ON() digitalWrite(LED1,LOW);
+#define LED1_OFF() digitalWrite(LED1,HIGH);
+#define LED2_ON() digitalWrite(LED2,LOW);
+#define LED2_OFF() digitalWrite(LED2,HIGH);
 
 #endif

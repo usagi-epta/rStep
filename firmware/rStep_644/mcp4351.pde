@@ -1,10 +1,7 @@
-#define MSP4351_CS 14
+
 #define mcp4351_end() SPIend()
 
-#define SCK 13
-#define MOSI 11
-#define MISO 12
-#define SS 10
+
 #define SPI_CLOCK_DIV2 0x04
 #define SPI_MODE0 0x00
 #define SPI_MODE1 0x04
@@ -49,7 +46,7 @@ void mcp4351_init(void) {
       return;
     }
   }
-  Serial.println("INIT_ERR");
+  Serial.println("ERR INIT");
   while(1); //lock up device as we can't set the currents
 }
 
@@ -65,7 +62,7 @@ uint8_t mcp4351_setWiper(uint8_t wiper, uint16_t value) {
   digitalWrite(MSP4351_CS, HIGH);
   SPI_OFF();
   if (a!=0xFF || b!=0xFF) {
-    Serial.println("ERR_CUR");
+    Serial.println("ERR CUR");
     return false;
   }
   return true;
