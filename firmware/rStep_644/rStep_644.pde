@@ -27,6 +27,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(LED1, OUTPUT);// init led
   pinMode(LED2, OUTPUT);// init led
+  
   LED1_ON();
   LED2_ON();
   //init code
@@ -37,7 +38,8 @@ void setup() {
   init_steppers();
   init_process_string();
   //increase clock resolution
-  TCCR0B &= ~_BV(CS00); //for ATmega168!! XXX: this will mess up millis,micros,delay,delayMicroseconds
+
+  TCCR0B &= ~_BV(CS00); //for ATmega168!! XXX: this will mess up millis,micros,delay,delayMicroseconds 
   
   //set current system feedrate
   feedrate = getMaxFeedrate();
@@ -45,7 +47,11 @@ void setup() {
   //default configuration
   process_string((uint8_t*)"G21"); //default in mm
   quiet = false;
-  Serial.println("start");
+  Serial.print("start (v");
+  Serial.print($Rev$);
+  Serial.print(" ");
+  Serial.print($Date$);
+  Serial.println(")");
   LED2_OFF();
 }
 

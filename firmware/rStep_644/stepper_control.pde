@@ -109,6 +109,7 @@ void r_move(float feedrate) {
       _STEP_PORT |= a->direct_step_pin;
       //need to wait 1uS
       __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
+      __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
       __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
       _STEP_PORT &= ~a->direct_step_pin;
     }

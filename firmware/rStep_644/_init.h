@@ -41,15 +41,15 @@
 #define ENABLE 2 //low enabled
 #define MS1 17
 #define MS2 16
-#define RST 3 
-#define SLP 3
+#define RST 1 
+#define SLP 1
 #define STEP_X 14
 #define STEP_Y 12
 #define STEP_Z 10
 #define DIR_X 15
 #define DIR_Y 13
 #define DIR_Z 11
-#define MOTOR_PIN 1
+#define MOTOR_PIN 3
 
 #define LED1 27
 #define LED2 30
