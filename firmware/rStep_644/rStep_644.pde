@@ -50,7 +50,7 @@ void setup() {
   Serial.print("start (v");
   Serial.print($Rev$);
   Serial.print(" ");
-  Serial.print($Date$);
+  Serial.print($Date: 2010-11-30 22:39:07 -0800 (Tue, 30 Nov 2010) $);
   Serial.println(")");
   LED2_OFF();
 }
