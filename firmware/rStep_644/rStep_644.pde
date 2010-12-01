@@ -48,10 +48,9 @@ void setup() {
   process_string((uint8_t*)"G21"); //default in mm
   quiet = false;
   Serial.print("start (v");
-  Serial.print($Rev$);
-  Serial.print(" ");
-  Serial.print($Date: 2010-11-30 22:39:07 -0800 (Tue, 30 Nov 2010) $);
-  Serial.println(")");
+  Serial.print("$Rev$ @ ");
+  Serial.print(F_CPU);
+  Serial.println("Hz)");
   LED2_OFF();
 }
 
