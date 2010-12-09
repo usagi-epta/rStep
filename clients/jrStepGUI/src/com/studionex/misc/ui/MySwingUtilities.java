@@ -19,6 +19,10 @@ package com.studionex.misc.ui;
  * Contact info: jlp@studionex.com
  */
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -43,6 +47,14 @@ public class MySwingUtilities {
 			// TODO: log this?
 			//e.printStackTrace();
 		}
+	}
+	
+	public static void displayCentered(Component component) {
+		// move component to the screen center
+		Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+		component.setLocation(
+				(screenDimension.width - component.getSize().width) / 2,
+				(screenDimension.height - component.getSize().height) / 2); 
 	}
 	
 }

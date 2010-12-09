@@ -21,32 +21,197 @@ package com.studionex.jrStepGUI;
  * Contact info: jrstepgui@studionex.com
  */
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.PrintStream;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+
+import org.bushe.swing.event.EventBus;
+import org.bushe.swing.event.EventTopicSubscriber;
 
 import com.studionex.jrStepGUI.rStep.RStep;
-import com.studionex.jrStepGUI.rStep.RStepEvent;
-import com.studionex.jrStepGUI.rStep.RStepEventListener;
+import com.studionex.jrStepGUI.rStep.RStepPlayer;
 import com.studionex.jrStepGUI.rStep.RStepPlayerEvent;
 import com.studionex.misc.ui.JPanelOutputStream;
 import com.studionex.misc.ui.MySwingUtilities;
+import com.studionex.rStep.input.DebugMessageEvent;
+import com.studionex.rStep.input.InputEvent;
+import com.studionex.rStep.input.ReplyEvent;
+import com.studionex.rStep.input.StartEvent;
+import com.studionex.rStep.input.SyntaxMessageEvent;
 
 @SuppressWarnings("serial")
-public class Application extends JFrame implements RStepEventListener {
+public class Application extends JFrame implements EventTopicSubscriber<Object>  {
 	private RStep rStep;
+	private boolean start = true;
+	private RStepPlayer rStepPlayer;
 	
 	private MainJPanel mainJPanel;
 	private JPanelOutputStream serialJPanelOutputStream;
+	
+	public Application() {
+		rStep = new RStep();
+
+		// connect a PrintStream to monitor rStep I/Os
+		rStep.setSerialMonitor(new PrintStream(getSerialJPanelOutputStream(), true));
+		rStep.setTimestamping(true);
+		
+		EventBus.subscribe(".*", this);
+
+		// listen to some rStep outputs
+		EventBus.subscribe("START", this);
+		EventBus.subscribe(Pattern.compile("Reply:.*"), this);
+		EventBus.subscribe(Pattern.compile("Debug:.*"), this);
+		EventBus.subscribe(Pattern.compile("Syntax error:.*"), this);
+		
+		EventBus.subscribe(Pattern.compile("Sen[dt]"), this);
+		EventBus.subscribe(Pattern.compile("CommunicationException"), this);
+
+		rStepPlayer = new RStepPlayer();
+
+		// listen to some RStepPlayer outputs
+		EventBus.subscribe("Player state:.*", this);
+		EventBus.subscribe("IOException:.*", this);
+
+		mainJPanel = new MainJPanel(this);
+		mainJPanel.setUIState(UIStatesHandler.UIStates.WAITING);
+		this.getContentPane().add(mainJPanel);
+		
+		this.addWindowListener(new ApplicationWindowEventHandler());
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+		this.setTitle("jrStepGUI");
+		this.setSize(700, 525);
+		
+		MySwingUtilities.displayCentered(this); 
+		
+		this.setVisible(true);
+
+		// open a SerialJDialog that allows to choose and open
+		// the serial port on which rStep communicates
+		SerialJDialog serialJDialog = new SerialJDialog(this);
+		serialJDialog.setVisible(true);
+	}
+	
+	public void send(String command) {
+		rStep.send(command, false);
+	}
+	
+	public boolean connect(String serialPortName) {
+		return rStep.connect(serialPortName);
+	}
+	
+	public void openFile(File gcodeFile) {
+		rStepPlayer.openFile(gcodeFile, rStep);
+		mainJPanel.setUIState(UIStatesHandler.UIStates.FILE_OPENED);
+	}
+
+	public boolean hasPlayer() {
+		return rStepPlayer.hasPlayer();
+	}
+
+	public void playerPlay() {
+		rStepPlayer.playerPlay();
+	}
+
+	public void playerPause() {
+		rStepPlayer.playerPause();
+	}
+
+	public void playerAbort() {
+		rStepPlayer.playerAbort();
+	}
+
+	public void onEvent(String topic, Object eventObject) {
+		if(topic.equals("Send")) {
+			mainJPanel.setUIState(UIStatesHandler.UIStates.WAITING);
+			
+		} else if(topic.equals("Sent")) {
+			mainJPanel.setUIState(UIStatesHandler.UIStates.READY);
+			
+		} else if(topic.equals("CommunicationException")) {
+			errorDialog("A communication error occured while sending " + (String)eventObject);
+			
+		} else if(eventObject instanceof InputEvent) {
+			if(eventObject instanceof ReplyEvent && start) {
+				ReplyEvent replyEvent = (ReplyEvent)eventObject;
+				
+				if(!replyEvent.isOk()) {
+					errorDialog("rStep returned some error at startup: " + replyEvent.getKind() + "\nIt may be caused by a badly initialized rStep EEPROM.\n");
+				}
+	
+				mainJPanel.setUIState(UIStatesHandler.UIStates.READY);
+				
+			} else if(eventObject instanceof StartEvent) {
+				start = false;
+				mainJPanel.setUIState(UIStatesHandler.UIStates.READY);
+				
+			} else if(eventObject instanceof DebugMessageEvent) {
+				// DebugMessageEvent messageEvent = (DebugMessageEvent)event;
+				
+			} else if(eventObject instanceof SyntaxMessageEvent) {
+				SyntaxMessageEvent messageEvent = (SyntaxMessageEvent)eventObject;
+				errorDialog("rStep returned a badly formatted message: " + messageEvent.getMessage() + "\nThis should never occur, please report it.");
+	
+			}
+		} else if(eventObject instanceof RStepPlayerEvent) {
+			RStepPlayerEvent rStepPlayerEvent = (RStepPlayerEvent)eventObject;
+			switch(rStepPlayerEvent.getPlayerReason()) {
+			case PLAYER_STATE:
+				if(mainJPanel != null)
+					switch(rStepPlayerEvent.getState()) {
+					case READY:
+						// update mainJPanel UI
+						mainJPanel.setUIState(UIStatesHandler.UIStates.FILE_OPENED);
+						break;
+					case PAUSED:
+						// update mainJPanel UI
+						mainJPanel.setUIState(UIStatesHandler.UIStates.PAUSED);
+						break;
+					case PLAYING:
+						mainJPanel.setUIState(UIStatesHandler.UIStates.PLAYING);
+						break;
+					case ABORTED:
+					case FINISHED:
+						mainJPanel.setUIState(UIStatesHandler.UIStates.READY);
+						break;
+					}
+				break;
+			case IO_EXCEPTION:
+				errorDialog("An error occured while reading the GCode file.\n" + rStepPlayerEvent.getIOException());
+				break;
+			}
+		}
+	}
+
+	public void errorDialog(String message) {
+		JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION);
+		optionPane.createDialog(this, null).setVisible(true); 
+	}
+	
+	public JPanelOutputStream getSerialJPanelOutputStream() {
+		if(serialJPanelOutputStream == null)
+			serialJPanelOutputStream = new JPanelOutputStream();
+		return serialJPanelOutputStream;
+	}
+	
+	private class ApplicationWindowEventHandler extends WindowAdapter {
+		/**
+		 * This method is called when the user clicks the close button
+		 */
+		@Override
+		public void windowClosing(WindowEvent e) {
+			// TODO: anything to do before closing when there is a file playing (e.g. stop spindle)?
+			rStep.disconnect();
+			dispose();
+			System.exit(0);
+		}
+	}
 	
 	/**
 	 * Launches the application
@@ -59,128 +224,5 @@ public class Application extends JFrame implements RStepEventListener {
 				new Application();
 			}
 		});
-	}
-	
-	public Application() {
-		rStep = new RStep();
-		rStep.addEventListener(this);
-		// connect a PrintStream to monitor rStep I/Os
-		rStep.setSerialMonitor(new PrintStream(getSerialJPanelOutputStream(), true));
-        		
-		mainJPanel = new MainJPanel(this);
-		mainJPanel.setUIState(MainJPanel.UIStates.WAITING);
-		this.getContentPane().add(mainJPanel);
-		
-		this.addWindowListener(new ApplicationWindowEventHandler());
-		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
-		this.setTitle("JRStepGUI");
-		this.setSize(700, 525);
-		
-		displayCentered(this); 
-		
-		this.setVisible(true);
-
-		// open a SerialJDialog that allows to choose and open
-		// the serial port on which rStep communicates
-		SerialJDialog serialJDialog = new SerialJDialog(this);
-		serialJDialog.setVisible(true);
-		
-		if(!rStep.isConnected())
-			System.exit(1);
-
-		mainJPanel.setUIState(MainJPanel.UIStates.MANUAL);
-	}
-	
-	public RStep getRStep() {
-		return rStep;
-	}
-
-	public boolean startRStep(String portName) {
-		getRStep().connect(portName);
-		return getRStep().isConnected();
-	}
-	
-	public void errorDialog(String message) {
-		JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION);
-		optionPane.createDialog(this, null).setVisible(true); 
-	}
-	
-	public JPanelOutputStream getSerialJPanelOutputStream() {
-		if(serialJPanelOutputStream == null)
-			serialJPanelOutputStream = new JPanelOutputStream();
-		return serialJPanelOutputStream;
-	}
-	
-	public void displayCentered(Component component) {
-		// move component to the screen center
-		Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-		component.setLocation(
-				(screenDimension.width - this.getSize().width) / 2,
-				(screenDimension.height - this.getSize().height) / 2); 
-	}
-	
-	private class ApplicationWindowEventHandler extends WindowAdapter {
-		/**
-		 * This method is called when the user clicks the close button
-		 */
-		@Override
-		public void windowClosing(WindowEvent e) {
-			// TODO: anything to do before closing when there is a file playing (e.g. stop spindle)?
-			dispose();
-			System.exit(0);
-		}
-	}
-
-	/**
-	 * This is the main event handler. It dispaches the events through the UI components.
-	 */
-	public void eventHandler(RStepEvent rStepEvent) {
-		switch(rStepEvent.getReason()) {
-		case MESSAGE:
-			errorDialog(rStepEvent.toString());
-			break;
-		case CONNECTION_EXCEPTION:
-			errorDialog("Cannot open rStep serial port");
-			break;
-		case COMMUNICATION_EXCEPTION:
-			// this should occur only while connecting
-			// in the other cases (sending or expecting data) it should be catched before 
-			errorDialog("An error occured while receiving data from rStep");
-			break;
-		case PROTOCOL_EXCEPTION:
-			errorDialog("PROTOCOL_EXCEPTION: " + rStepEvent.toString() + "\nrStep doesn't reply properly, try to reset it");
-			break;
-		case OTHER:
-			if(rStepEvent instanceof RStepPlayerEvent) {
-				RStepPlayerEvent rStepPlayerEvent = (RStepPlayerEvent)rStepEvent;
-				switch(rStepPlayerEvent.getPlayerReason()) {
-				case PLAYER_STATE:
-					if(mainJPanel != null)
-						switch(rStepPlayerEvent.getState()) {
-						case READY:
-							// update mainJPanel UI
-							mainJPanel.setUIState(MainJPanel.UIStates.FILE_OPENED);
-							break;
-						case PAUSED:
-							// update mainJPanel UI
-							mainJPanel.setUIState(MainJPanel.UIStates.PAUSED);
-							break;
-						case PLAYING:
-							mainJPanel.setUIState(MainJPanel.UIStates.PLAYING);
-							break;
-						case ABORTED:
-						case FINISHED:
-							mainJPanel.setUIState(MainJPanel.UIStates.MANUAL);
-							break;
-						}
-					break;
-				case IO_EXCEPTION:
-					errorDialog("an error occured on the GCode file");
-					break;
-				}
-			}
-			break;
-		}
 	}
 }

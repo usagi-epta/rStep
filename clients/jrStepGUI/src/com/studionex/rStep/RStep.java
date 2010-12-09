@@ -7,23 +7,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.TooManyListenersException;
 
-import com.studionex.event.EventManager;
-import com.studionex.jrStepGUI.rStep.RStepEvent;
-import com.studionex.jrStepGUI.rStep.RStepEventListener;
-import com.studionex.rStep.input.AbsoluteModeMessageEvent;
-import com.studionex.rStep.input.CoordinatesMessageEvent;
-import com.studionex.rStep.input.CurrentMessageEvent;
-import com.studionex.rStep.input.DebugMessageEvent;
-import com.studionex.rStep.input.FeedRateMessageEvent;
 import com.studionex.rStep.input.InputEvent;
 import com.studionex.rStep.input.InputEventListener;
 import com.studionex.rStep.input.InputParser;
-import com.studionex.rStep.input.StepByInchMessageEvent;
-import com.studionex.rStep.input.SteppingMessageEvent;
 import com.studionex.rStep.input.ReplyEvent;
 import com.studionex.rStep.input.Serial;
-import com.studionex.rStep.input.StartEvent;
-import com.studionex.rStep.input.SyntaxMessageEvent;
 
 
 /*
@@ -54,27 +42,26 @@ import com.studionex.rStep.input.SyntaxMessageEvent;
  * @author  Jean-Louis Paquelin
  */
 public class RStep implements InputEventListener {
-	public static final long START_TIMEOUT = 10000; // 5 seconds
+	private PrintStream monitorStream;
+	private boolean timestamping = false;
 
 	protected Serial serialPort;
 	protected InputParser inputParser;
-	protected PrintStream monitorStream;
 	
-	private boolean hasStarted = false;
+	private boolean lastCommandReplied;
 	
-	private Boolean gotStart = false;
-	private Boolean gotOk = false;
-	
-	public void connect(String serialPortName) throws ConnectionException, CommunicationException, ProtocolException {
-		if(isConnected())
-			disconnect();
-		
+	public RStep() {
 		inputParser = new InputParser();
 		inputParser.add(this);
-		
+	}
+
+	public void connect(String serialPortName) throws ConnectionException {
+		disconnect();
+				
 		try {
 			serialPort = new Serial(serialPortName, inputParser);
 			serialPort.setMonitor(monitorStream);
+			serialPort.setTimestamping(timestamping);
 		} catch (PortInUseException e) {
 			throw new ConnectionException(e);
 		} catch (IOException e) {
@@ -84,58 +71,29 @@ public class RStep implements InputEventListener {
 		} catch (UnsupportedCommOperationException e) {
 			throw new ConnectionException(e);
 		}
-
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		if(isSerialConnected()) {
-			synchronized(this) {
-				try {
-					while(!gotStart) {
-					this.wait(START_TIMEOUT);
-					}
-				} catch (InterruptedException e) {
-					// TODO: log this?
-					//e.printStackTrace();
-				}
-				if(!gotStart)
-					throw new ProtocolException("no START", "ain't got START");
-				else
-					hasStarted = true;
-			}
-		}
 	}
 
 	protected Serial getSerialPort() {
 		return serialPort;
 	}
 
-	protected boolean isSerialConnected() {
-		return (getSerialPort() != null) && getSerialPort().isOpen();
-	}
-	
 	public boolean isConnected() {
-		return isSerialConnected() && hasStarted;
+		return (getSerialPort() != null) && getSerialPort().isOpen();
 	}
 	
 	public void disconnect() {
 		if(isConnected())
     		getSerialPort().close();
-		hasStarted = false;
 	}
 
-	public void reset() throws ConnectionException, CommunicationException, ProtocolException {
+	public void reset() throws ConnectionException {
 		if(isConnected()) {
 			String serialPortName = getSerialPort().getPortName();
 			
 			disconnect();
 			
 			try {
-				Thread.sleep(100);
+				Thread.sleep(100); // 100 msec
 			} catch (InterruptedException e) {
 				// TODO: log this?
 				// e.printStackTrace();
@@ -147,81 +105,56 @@ public class RStep implements InputEventListener {
 	
 	public void setSerialMonitor(PrintStream monitorStream) {
 		this.monitorStream = monitorStream;
-		if(getSerialPort() != null)
+		if(isConnected())
 			getSerialPort().setMonitor(monitorStream);
 	}
 	
-	public void sendExpectOk(String command) throws CommunicationException, ProtocolException {
+	public boolean isTimestamping() {
+		if(isConnected())
+			return getSerialPort().isTimestamping();
+		else
+			return timestamping;
+	}
+
+	public void setTimestamping(boolean timestamping) {
+		this.timestamping = timestamping;
+		if(isConnected())
+			getSerialPort().setTimestamping(timestamping);
+	}
+
+	public void send(String command) throws CommunicationException {
 		try {
 			getSerialPort().send(command);
-			synchronized(this) {
-				try {
-					this.wait(START_TIMEOUT);
-				} catch (InterruptedException e) {
-					// TODO: log this?
-					//e.printStackTrace();
-				}
-				if(!gotOk)
-					throw new ProtocolException("no Ok", "while sending [" + command + "] ain't got [OK]");
-				else
-					gotOk = false;
-			}
 		} catch (IOException e) {
 			throw new CommunicationException(e);
 		}
 	}
 	
+	public synchronized void sendAndWaitReply(String command) throws CommunicationException {
+		lastCommandReplied = false;
+		send(command);
+		while(!lastCommandReplied)
+			try {
+				this.wait();
+			} catch (InterruptedException e) {
+				// TODO: log this?
+				e.printStackTrace();
+			}
+	}
+	
+	public synchronized void eventHandler(InputEvent inputEvent) {
+		if(inputEvent instanceof ReplyEvent) {
+			lastCommandReplied = true;
+			this.notify();
+		}		
+	}
+
 	public void add(InputEventListener eventListener) {
 		inputParser.add(eventListener);
 	}
 
 	public void remove(InputEventListener eventListener) {
 		inputParser.remove(eventListener);
-	}
-
-	public void eventHandler(InputEvent inputEvent) {
-		if(inputEvent instanceof ReplyEvent) {
-			ReplyEvent replyEvent = (ReplyEvent)inputEvent;
-			
-			if(replyEvent.isOk())
-				synchronized(this) {
-					gotOk = true;
-					this.notify();
-				}
-		} else if(inputEvent instanceof CoordinatesMessageEvent) {
-			CoordinatesMessageEvent messageEvent = (CoordinatesMessageEvent)inputEvent;
-			System.out.println(messageEvent);
-			
-		} else if(inputEvent instanceof DebugMessageEvent) {
-			DebugMessageEvent messageEvent = (DebugMessageEvent)inputEvent;
-			System.err.println(messageEvent);
-			
-		} else if(inputEvent instanceof AbsoluteModeMessageEvent) {
-			AbsoluteModeMessageEvent messageEvent = (AbsoluteModeMessageEvent)inputEvent;
-			
-		} else if(inputEvent instanceof CurrentMessageEvent) {
-			CurrentMessageEvent messageEvent = (CurrentMessageEvent)inputEvent;
-			
-		} else if(inputEvent instanceof FeedRateMessageEvent) {
-			FeedRateMessageEvent messageEvent = (FeedRateMessageEvent)inputEvent;
-			
-		} else if(inputEvent instanceof StepByInchMessageEvent) {
-			StepByInchMessageEvent messageEvent = (StepByInchMessageEvent)inputEvent;
-			
-		} else if(inputEvent instanceof SteppingMessageEvent) {
-			SteppingMessageEvent messageEvent = (SteppingMessageEvent)inputEvent;
-			
-		} else if(inputEvent instanceof StartEvent) {
-			synchronized(this) {
-				gotOk = false;
-				gotStart = true;
-				this.notify();
-			}
-		} else if(inputEvent instanceof SyntaxMessageEvent) {
-			SyntaxMessageEvent messageEvent = (SyntaxMessageEvent)inputEvent;
-			System.err.println(messageEvent);
-			
-		}
 	}
 
 	@Override

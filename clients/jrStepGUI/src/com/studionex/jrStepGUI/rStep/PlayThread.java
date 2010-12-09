@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.bushe.swing.event.EventBus;
+
 
 public class PlayThread extends Thread {
 	public static enum PlayerStates {READY, PAUSED, PLAYING, ABORTED, FINISHED};
@@ -34,53 +36,46 @@ public class PlayThread extends Thread {
 
 	private final File gcodeFile;
 	private final RStep rStep;
-	private final RStepEventListener rStepEventListener;
 	
 	private GCodeFileHandler gcodeFileHandler = null;
 	
-	public PlayThread(File gcodeFile, RStep rStep, RStepEventListener rStepEventListener) {
+	public PlayThread(File gcodeFile, RStep rStep) {
 		super();
 		this.gcodeFile = gcodeFile;
 		this.rStep = rStep;
-		this.rStepEventListener = rStepEventListener;
 		
 		try {
 			gcodeFileHandler = new GCodeFileHandler(gcodeFile);
 			changeStateTo = PlayerStates.READY;
+			RStepPlayerEvent event = new RStepPlayerEvent(this, changeStateTo);
+			EventBus.publish(event.toString(), event);
+			start();
 		} catch (IOException e) {
 			// input file problem
-			fire(new RStepPlayerEvent(this, e));
-		}
-		start();
-	}
-
-	public void play() {
-		synchronized(this) {
-			changeStateTo = PlayerStates.PLAYING;
-			this.notify();
+			RStepPlayerEvent event = new RStepPlayerEvent(this, e);
+			EventBus.publish(event.toString(), event);
 		}
 	}
 
-	public boolean isPlaying() {
-		synchronized(this) {
-			return changeStateTo == PlayerStates.PLAYING;
-		}
+	public synchronized void play() {
+		changeStateTo = PlayerStates.PLAYING;
+		this.notify();
 	}
 
-	public void pause() {
-		synchronized(this) {
-			changeStateTo = PlayerStates.PAUSED;
-			this.notify();
-			// notifying the thread isn't really necessary
-			// but this avoids that a listener stays stucked waiting the PAUSE event
-		}
+	public synchronized boolean isPlaying() {
+		return changeStateTo == PlayerStates.PLAYING;
+	}
+
+	public synchronized void pause() {
+		changeStateTo = PlayerStates.PAUSED;
+		this.notify();
+		// notifying the thread isn't really necessary
+		// but this avoids that a listener stays stucked waiting the PAUSE event
 	}
 	
-	public void abort() {
-		synchronized(this) {
-			changeStateTo = PlayerStates.ABORTED;
-			this.notify();
-		}
+	public synchronized void abort() {
+		changeStateTo = PlayerStates.ABORTED;
+		this.notify();
 	}
 
 	public void run() {
@@ -96,22 +91,25 @@ public class PlayThread extends Thread {
 					try {
 						line = gcodeFileHandler.getLine();
 					} catch (IOException e) {
-						fire(new RStepPlayerEvent(this, e));
+						RStepPlayerEvent event = new RStepPlayerEvent(this, e);
+						EventBus.publish(event.toString(), event);
 					}
 					if(line == null) {
 						// no more line available
-						System.err.println("end of " + gcodeFile + " reached");
+						System.out.println("end of " + gcodeFile + " reached");
 						changeStateTo = PlayerStates.FINISHED;
 					}
 					if(changeStateTo != state) {
-						fire(new RStepPlayerEvent(this, changeStateTo));
+						RStepPlayerEvent event = new RStepPlayerEvent(this, changeStateTo);
+						EventBus.publish(event.toString(), event);
 						state = changeStateTo;
 					}
 					break;
 				case READY:
 				case PAUSED:
 					if(changeStateTo != state) {
-						fire(new RStepPlayerEvent(this, changeStateTo));
+						RStepPlayerEvent event = new RStepPlayerEvent(this, changeStateTo);
+						EventBus.publish(event.toString(), event);
 						state = changeStateTo;
 					}
 					try { 
@@ -125,7 +123,8 @@ public class PlayThread extends Thread {
 				case FINISHED:
 					gcodeFileHandler.close();
 					gcodeFileHandler = null;
-					fire(new RStepPlayerEvent(this, changeStateTo));
+					RStepPlayerEvent event = new RStepPlayerEvent(this, changeStateTo);
+					EventBus.publish(event.toString(), event);
 					break;
 				}
 			}
@@ -138,17 +137,11 @@ public class PlayThread extends Thread {
 				
 				if(cleanLine.length() > 0) {
 					// send the available line to rStep
-					rStep.sendExpectOk(cleanLine);
+					rStep.send(cleanLine, true);
 				} else {
-					System.err.println("skip [" + line + "]");
+					System.out.println("skip [" + line + "]");
 				}
 			}
-		}
-	}
-	
-	private synchronized void fire(RStepEvent event) {
-		if(rStepEventListener != null) {
-			rStepEventListener.eventHandler(event);
 		}
 	}
 	
@@ -182,7 +175,7 @@ public class PlayThread extends Thread {
 		    } finally {
 		        super.finalize();
 		    }
-		}	
+		}
 	}
 
 }

@@ -25,10 +25,9 @@ import java.util.EventObject;
 
 import com.studionex.rStep.CommunicationException;
 import com.studionex.rStep.ConnectionException;
-import com.studionex.rStep.ProtocolException;
 
 @SuppressWarnings("serial")
-public class RStepEvent extends EventObject {
+public abstract class RStepEvent extends EventObject {
 	public static enum Reason {MESSAGE, CONNECTION_EXCEPTION, COMMUNICATION_EXCEPTION, PROTOCOL_EXCEPTION, OTHER};
 
 	private final Reason reason; 
@@ -36,40 +35,33 @@ public class RStepEvent extends EventObject {
 	private final String message;
 	private final ConnectionException connectionException;
 	private final CommunicationException communicationException;
-	private final ProtocolException protocolException;
 	
 	public RStepEvent(Object source) {
-		this(source, Reason.OTHER, null, null, null, null);
+		this(source, Reason.OTHER, null, null, null);
 	}
 	
 	public RStepEvent(Object source, String message) {
-		this(source, Reason.MESSAGE, message, null, null, null);
+		this(source, Reason.MESSAGE, message, null, null);
 	}
 	
 	public RStepEvent(Object source, ConnectionException connectionException) {
-		this(source, Reason.CONNECTION_EXCEPTION, null, connectionException, null, null);
+		this(source, Reason.CONNECTION_EXCEPTION, null, connectionException, null);
 	}
 
 	public RStepEvent(Object source, CommunicationException communicationException) {
-		this(source, Reason.COMMUNICATION_EXCEPTION, null, null, communicationException, null);
-	}
-
-	public RStepEvent(Object source, ProtocolException protocolException) {
-		this(source, Reason.PROTOCOL_EXCEPTION, null, null, null, protocolException);
+		this(source, Reason.COMMUNICATION_EXCEPTION, null, null, communicationException);
 	}
 
 	protected RStepEvent(Object source,
 			Reason reason,
 			String message,
 			ConnectionException connectionException,
-			CommunicationException communicationException,
-			ProtocolException protocolException) {
+			CommunicationException communicationException) {
 		super(source);
 		this.reason = reason;
 		this.message = message;
 		this.connectionException = connectionException;
 		this.communicationException = communicationException;
-		this.protocolException = protocolException;
 	}
 
 	public Reason getReason() { return reason; }
@@ -77,7 +69,6 @@ public class RStepEvent extends EventObject {
 	public String getMessage() { return message; }
 	public ConnectionException getConnectionException() { return connectionException; }
 	public CommunicationException getCommunicationException() { return communicationException; }
-	public ProtocolException getProtocolException() { return protocolException; }
 
 	@Override
 	public String toString() {
@@ -88,8 +79,6 @@ public class RStepEvent extends EventObject {
 			return super.toString() + " " + getConnectionException();
 		case COMMUNICATION_EXCEPTION:
 			return super.toString() + " " + getCommunicationException();
-		case PROTOCOL_EXCEPTION:
-			return super.toString() + " " + getProtocolException();
 		}
 		return super.toString();
 	}

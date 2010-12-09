@@ -35,9 +35,9 @@ public class StepByInchMessageEvent extends InputEvent {
 		this.z = z;
 	}
 
-	protected int getX() { return x; }
-	protected int getY() { return y; }
-	protected int getZ() { return z; }
+	public int getX() { return x; }
+	public int getY() { return y; }
+	public int getZ() { return z; }
 
 	@Override
 	public String toString() {

@@ -77,6 +77,7 @@ public class JPanelOutputStream extends OutputStream {
 	}
 
 	private void updateTextArea(final String text) {
+		// invokeLater is used to avoid direct access to jTextArea from a foreign thread
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				jTextArea.append(text);

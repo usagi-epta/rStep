@@ -35,9 +35,9 @@ public abstract class Double3DMessageEvent extends InputEvent {
 		this.z = z;
 	}
 
-	protected double getX() { return x; }
-	protected double getY() { return y; }
-	protected double getZ() { return z; }
+	public double getX() { return x; }
+	public double getY() { return y; }
+	public double getZ() { return z; }
 
 	@Override
 	public String toString() {

@@ -60,7 +60,7 @@ public class FileJPanel extends JPanel implements UIStatesHandler {
 		this.mainJPanel = mainJPanel;
 		
 		buildUI();
-		setUIState(UIStates.MANUAL);
+		setUIState(UIStatesHandler.UIStates.WAITING);
 	}
 	
 	private void buildUI() {
@@ -161,30 +161,30 @@ public class FileJPanel extends JPanel implements UIStatesHandler {
 
 		public void actionPerformed(ActionEvent actionEvent) {
 			if(actionEvent.getActionCommand() == PBCCmd.PAUSE.name()) {
-				if(application.getRStep().hasPlayer() && getUIState() == UIStates.PLAYING) {
+				if(application.hasPlayer() && getUIState() == UIStatesHandler.UIStates.PLAYING) {
 					// disabling the button to show the click
-					mainJPanel.setUIState(UIStates.WAITING);
+					mainJPanel.setUIState(UIStatesHandler.UIStates.WAITING);
 					mainJPanel.setStatusText("Waiting for the player...");
-					application.getRStep().playerPause();
+					application.playerPause();
 				}
 			} else if(actionEvent.getActionCommand() == PBCCmd.ABORT.name()) {
-				if(application.getRStep().hasPlayer()) {
+				if(application.hasPlayer()) {
 					// disabling the button to show the click
-					mainJPanel.setUIState(UIStates.WAITING);
+					mainJPanel.setUIState(UIStatesHandler.UIStates.WAITING);
 					mainJPanel.setStatusText("Aborting the playback...", MainJPanel.MESSAGE_DELAY);
-					application.getRStep().playerAbort();
+					application.playerAbort();
 				}
 			} else if(actionEvent.getActionCommand() == PBCCmd.PLAY.name()) {
-				if(application.getRStep().hasPlayer()) {
+				if(application.hasPlayer()) {
 					// disabling the button to show the click
-					mainJPanel.setUIState(UIStates.WAITING);
+					mainJPanel.setUIState(UIStatesHandler.UIStates.WAITING);
 					mainJPanel.setStatusText("Waiting for the player...");
-					application.getRStep().playerPlay();
+					application.playerPlay();
 				}
 			} else if(actionEvent.getActionCommand() == PBCCmd.OPEN.name()) {
 				open();
 			} else 
-				System.err.println("Unknown button " + actionEvent.getActionCommand());
+				System.out.println("Unknown button " + actionEvent.getActionCommand());
 		}
 	}
 	
@@ -206,7 +206,7 @@ public class FileJPanel extends JPanel implements UIStatesHandler {
 		case JFileChooser.APPROVE_OPTION:
 			// Approve (Open or Save) was clicked
 			pathJTextField.setText(chooser.getSelectedFile().toString());
-			application.getRStep().openFile(chooser.getSelectedFile());
+			application.openFile(chooser.getSelectedFile());
 			break;
 		case JFileChooser.CANCEL_OPTION:
 			// Opening canceled
@@ -217,15 +217,15 @@ public class FileJPanel extends JPanel implements UIStatesHandler {
 		}
 	}
 	
-	public UIStates getUIState() {
+	public UIStatesHandler.UIStates getUIState() {
 		return uiState;
 	}
 
-	public void setUIState(UIStates uiState) {
+	public void setUIState(UIStatesHandler.UIStates uiState) {
 		this.uiState = uiState;
 		
 		switch(uiState) {
-		case MANUAL:
+		case READY:
 			pathJTextField.setText(NO_FILE_MESSAGE);
 			openJButton.setEnabled(true);
 			

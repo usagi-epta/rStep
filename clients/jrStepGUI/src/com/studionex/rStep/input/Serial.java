@@ -38,7 +38,6 @@ import java.util.TooManyListenersException;
 import java.util.Vector;
 
 public class Serial implements SerialPortEventListener {
-	// TODO: queuing data to send?
 	private CommPortIdentifier portId;
 	private SerialPort serialPort;
 
@@ -46,7 +45,10 @@ public class Serial implements SerialPortEventListener {
 	private OutputStream outputStream;
 	
 	private InputParser inputParser;
+	
 	private PrintStream monitorStream;
+	private boolean timestamping = false;
+	private Long referenceTimestamp;
 	
 	public Serial(String portName, InputParser inputParser)
 	throws PortInUseException, IOException, TooManyListenersException, UnsupportedCommOperationException {
@@ -101,6 +103,25 @@ public class Serial implements SerialPortEventListener {
 		this.monitorStream = monitorStream;
 	}
 
+	public synchronized boolean isTimestamping() {
+		return timestamping;
+	}
+
+	public synchronized void setTimestamping(boolean timestamping) {
+		this.timestamping = timestamping;
+	}
+
+	private String getTimestamp() {
+		if(isTimestamping()) {
+			long t = System.currentTimeMillis();
+			if(referenceTimestamp == null)
+				referenceTimestamp = t;
+			
+			return "[" + String.format("%1$tT.%1$tL", t - referenceTimestamp) + "] ";
+		} else
+			return "";
+	}
+	
 	public boolean isOpen() {
 		return (bufferedInputStream != null) && (outputStream != null);
 	}
@@ -114,7 +135,7 @@ public class Serial implements SerialPortEventListener {
 	public void send(String s) throws IOException {
 		synchronized(outputStream) {
 			if(monitorStream != null)
-				monitorStream.println(s);
+				monitorStream.println(getTimestamp() + s);
 			outputStream.write(s.getBytes());
 		}
 	}
@@ -126,7 +147,7 @@ public class Serial implements SerialPortEventListener {
 			while(bufferedInputStream.ready()) {
 				String line = bufferedInputStream.readLine();
 				if(monitorStream != null)
-					monitorStream.println("    " + line);
+					monitorStream.println(getTimestamp() + "    " + line);
 				if(inputParser != null)
 					inputParser.handleInput(line);
 			}

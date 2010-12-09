@@ -53,7 +53,7 @@ public class AuxJPanel extends JPanel implements UIStatesHandler {
 		this.application = application;
 		
 		buildUI();
-		setUIState(UIStates.MANUAL);
+		setUIState(UIStatesHandler.UIStates.WAITING);
 	}
 	
 	private void buildUI() {
@@ -169,17 +169,17 @@ public class AuxJPanel extends JPanel implements UIStatesHandler {
 						/* ipadx */ 0, /* ipady */ 0));
 	}
 	
-	public UIStates getUIState() {
+	public UIStatesHandler.UIStates getUIState() {
 		return uiState;
 	}
 
-	public void setUIState(UIStates uiState) {
+	public void setUIState(UIStatesHandler.UIStates uiState) {
 		this.uiState = uiState;
 		
 		commandJPanel.setUIState(uiState);
 		
 		switch(uiState) {
-		case MANUAL:
+		case READY:
 		case FILE_OPENED:
 			motorOnJButton.setEnabled(true);
 			motorOffJButton.setEnabled(true);

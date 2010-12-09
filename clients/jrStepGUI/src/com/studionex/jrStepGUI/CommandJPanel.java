@@ -47,7 +47,7 @@ public class CommandJPanel extends JPanel implements UIStatesHandler {
 		this.application = application;
 		
 		buildUI();
-		setUIState(UIStates.MANUAL);
+		setUIState(UIStatesHandler.UIStates.WAITING);
 	}
 	
 	private void buildUI() {
@@ -55,6 +55,7 @@ public class CommandJPanel extends JPanel implements UIStatesHandler {
 		
 		commandJComboBox = new JComboBox();
 		commandJComboBox.setEditable(true);
+		commandJComboBox.setToolTipText("enter a GCode command");
 		this.add(commandJComboBox,
 				new GridBagConstraints(
 						/* gridx */ 0, /* gridy */ 0,
@@ -73,10 +74,11 @@ public class CommandJPanel extends JPanel implements UIStatesHandler {
 					// insert the command at the top of the list if it isn't already in
 					if(commandJComboBox.getSelectedIndex() == -1)
 						commandJComboBox.insertItemAt(command, 0);
-					application.getRStep().sendExpectOk((String)command);
+					application.send((String)command);
 				}
 			}
 		});
+		executeJButton.setToolTipText("press to execute the command");
 		this.add(executeJButton,
 				new GridBagConstraints(
 						/* gridx */ 1, /* gridy */ 0,
@@ -88,25 +90,24 @@ public class CommandJPanel extends JPanel implements UIStatesHandler {
 						/* ipadx */ 0, /* ipady */ 0));
 	}
 	
-	public UIStates getUIState() {
+	public UIStatesHandler.UIStates getUIState() {
 		return uiState;
 	}
 
-	public void setUIState(UIStates uiState) {
+	public void setUIState(UIStatesHandler.UIStates uiState) {
 		this.uiState = uiState;
 		switch(uiState) {
-		case MANUAL:
+		case READY:
 		case FILE_OPENED:
 			commandJComboBox.setEnabled(true);
 			executeJButton.setEnabled(true);
-			
 			break;
+
 		case PLAYING:
 		case PAUSED:
 		case WAITING:
 			commandJComboBox.setEnabled(false);
 			executeJButton.setEnabled(false);
-
 			break;
 		}
 	}

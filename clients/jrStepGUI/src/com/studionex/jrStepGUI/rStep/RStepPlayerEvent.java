@@ -57,9 +57,9 @@ public class RStepPlayerEvent extends RStepEvent {
 	public String toString() {
 		switch(getPlayerReason()) {
 		case PLAYER_STATE:
-			return super.toString() + " " + getState();
+			return "Player state: " + getState();
 		case IO_EXCEPTION:
-			return super.toString() + " " + getIOException();
+			return "IOException: " + getIOException();
 		}
 		return super.toString();
 	}

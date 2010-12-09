@@ -54,7 +54,7 @@ public class XYZJPanel extends JPanel implements UIStatesHandler {
 		this.mainJPanel = mainJPanel;
 		
 		buildUI();
-		setUIState(UIStates.MANUAL);
+		setUIState(UIStatesHandler.UIStates.WAITING);
 	}
 	
 	private void buildUI() {
@@ -133,31 +133,31 @@ public class XYZJPanel extends JPanel implements UIStatesHandler {
 			if(mainJPanel.getStepSize() > 0) {
 				// TODO: move GCode to RStep class
 				if(actionEvent.getActionCommand() == XYZCmd.X_MINUS.name()) {
-					application.getRStep().sendExpectOk("G0 X-" + Double.toString(mainJPanel.getStepSize()));
+					application.send("G0 X-" + Double.toString(mainJPanel.getStepSize()));
 				} else if(actionEvent.getActionCommand() == XYZCmd.X_PLUS.name()) {
-					application.getRStep().sendExpectOk("G0 X" + Double.toString(mainJPanel.getStepSize()));
+					application.send("G0 X" + Double.toString(mainJPanel.getStepSize()));
 				} else if(actionEvent.getActionCommand() == XYZCmd.Y_MINUS.name()) {
-					application.getRStep().sendExpectOk("G0 Y-" + Double.toString(mainJPanel.getStepSize()));
+					application.send("G0 Y-" + Double.toString(mainJPanel.getStepSize()));
 				} else if(actionEvent.getActionCommand() == XYZCmd.Y_PLUS.name()) {
-					application.getRStep().sendExpectOk("G0 Y" + Double.toString(mainJPanel.getStepSize()));
+					application.send("G0 Y" + Double.toString(mainJPanel.getStepSize()));
 				} else if(actionEvent.getActionCommand() == XYZCmd.Z_MINUS.name()) {
-					application.getRStep().sendExpectOk("G0 Z-" + Double.toString(mainJPanel.getStepSize()));
+					application.send("G0 Z-" + Double.toString(mainJPanel.getStepSize()));
 				} else if(actionEvent.getActionCommand() == XYZCmd.Z_PLUS.name()) {
-					application.getRStep().sendExpectOk("G0 Z" + Double.toString(mainJPanel.getStepSize()));
+					application.send("G0 Z" + Double.toString(mainJPanel.getStepSize()));
 				} else 
-					System.err.println("Unknown button " + actionEvent.getActionCommand());
+					System.out.println("Unknown button " + actionEvent.getActionCommand());
 			}
 		}
 	}
 	
-	public UIStates getUIState() {
+	public UIStatesHandler.UIStates getUIState() {
 		return uiState;
 	}
 
-	public void setUIState(UIStates uiState) {
+	public void setUIState(UIStatesHandler.UIStates uiState) {
 		this.uiState = uiState;
 		switch(uiState) {
-		case MANUAL:
+		case READY:
 		case FILE_OPENED:
 			xPlusJButton.setEnabled(true);
 			xMinusJButton.setEnabled(true);

@@ -34,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 
+import com.studionex.misc.ui.MySwingUtilities;
 import com.studionex.rStep.input.Serial;
 
 @SuppressWarnings("serial")
@@ -54,7 +55,7 @@ public class SerialJDialog extends JDialog {
 		this.setSize(320, 240);
 		
 		// move this to the screen center
-		application.displayCentered(this); 
+		MySwingUtilities.displayCentered(this); 
 		
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}
@@ -90,7 +91,7 @@ public class SerialJDialog extends JDialog {
 		public void actionPerformed(ActionEvent actionEvent) {
 			if(!serialJList.isSelectionEmpty()) {
 				String portName = (String)serialJList.getSelectedValue();
-				if(application.startRStep(portName))
+				if(application.connect(portName))
 					window.dispose();
 			}
 		}

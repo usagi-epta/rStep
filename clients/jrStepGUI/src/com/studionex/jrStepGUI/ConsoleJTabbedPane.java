@@ -40,26 +40,13 @@ public class ConsoleJTabbedPane extends JTabbedPane {
 	}
 	
 	private void buildUI() {
-		Console outConsole = null;
 		try {
-			outConsole = new Console(Console.SystemStreams.OUT);
+			this.addTab("Messages", new Console(Console.SystemStreams.OUT));
 		} catch (IOException e) {
 			// TODO: log this?
 			e.printStackTrace();
 		}
-		if(outConsole != null)
-			this.addTab("Monitoring", outConsole);
 
-		Console errConsole = null;
-		try {
-			errConsole = new Console(Console.SystemStreams.ERR);
-		} catch (IOException e) {
-			// TODO: log this?
-			e.printStackTrace();
-		}
-		if(errConsole != null)
-			this.addTab("Messages", errConsole);
-		
 		this.addTab("Serial I/O", application.getSerialJPanelOutputStream().getJPanel());
 	}
 }

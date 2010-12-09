@@ -54,8 +54,20 @@ Once the library is installed, you'll just have to run jrStepGUI.jar.
 
 STORY
 
+2010-12-09
+* Use of an EventBus to share the events between multiple UI classes
+  (http://www.eventbus.org/).
+* Threaded handling of multiple GCodes on the same line. This feature uses the
+  same scheme as the PlayThread class. 
+
+2010-11-25
+* Rewrite of com.studionex.jrStepGUI.rStep.RStep to have a slightly better
+  decoupling between the low level class (com.studionex.rStep.RStep) and the
+  higher level Swing UI. This rewrite also takes care of Swing threading.
+* SendExpectOk() has been removed from the RStep class and replaced by send()
+  and an event mechanism to get the replies from the rStep board. 
+
 2010-10-10
-* Updated README file.
 * Now the rStep output is handled by the Serial and the InputParser Java
   classes. While Serial runs the rStep I/O, InputParser parses the data sent
   by rStep then call the appropriate listeners and send them an event.

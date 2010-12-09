@@ -32,7 +32,7 @@ import javax.swing.border.Border;
 
 @SuppressWarnings("serial")
 public class MainJPanel extends JPanel implements UIStatesHandler {
-	private UIStates uiState = UIStates.MANUAL;
+	private UIStatesHandler.UIStates uiState;
 	 
 	public static final int GAP = 5;
 	
@@ -43,6 +43,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 
 	private XYZJPanel xyzJPanel;
 	private StepJPanel stepJPanel;
+	private CoordinatesJPanel coordinatesJPanel;
 	private AuxJPanel auxJPanel;
 	private FileJPanel fileJPanel;
 	private StatusJPanel statusJPanel;
@@ -58,7 +59,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 		this.application = application;
 		
 		buildUI();
-		loadPrefs();
+		setUIState(UIStatesHandler.UIStates.WAITING);
 	}
 	
 	private void buildUI() {
@@ -88,13 +89,25 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 						/* insets */ new Insets(0, 0, 0, 0),
 						/* ipadx */ 0, /* ipady */ 0));
 		
+		coordinatesJPanel = new CoordinatesJPanel();
+		coordinatesJPanel.setBorder(MainJPanel.createBorder());
+		this.add(coordinatesJPanel,
+				new GridBagConstraints(
+						/* gridx */ 1, /* gridy */ 0,
+						/* gridwidth */ 1, /* gridheight */ 2,
+						/* weightx */ 1.0, /* weighty */ 0.0,
+						/* anchor */ GridBagConstraints.NORTHEAST,
+						/* fill */ GridBagConstraints.BOTH,
+						/* insets */ new Insets(0, 0, 0, 0),
+						/* ipadx */ 0, /* ipady */ 0));
+
 		auxJPanel = new AuxJPanel(application);
 		auxJPanel.setBorder(MainJPanel.createBorder());
 		this.add(auxJPanel,
 				new GridBagConstraints(
-						/* gridx */ 1, /* gridy */ 0,
+						/* gridx */ 2, /* gridy */ 0,
 						/* gridwidth */ 1, /* gridheight */ 2,
-						/* weightx */ 0.3, /* weighty */ 1.0,
+						/* weightx */ 1.0, /* weighty */ 1.0,
 						/* anchor */ GridBagConstraints.NORTHEAST,
 						/* fill */ GridBagConstraints.BOTH,
 						/* insets */ new Insets(0, 0, 0, 0),
@@ -105,7 +118,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 		this.add(fileJPanel,
 				new GridBagConstraints(
 						/* gridx */ 0, /* gridy */ 2,
-						/* gridwidth */ 2, /* gridheight */ 1,
+						/* gridwidth */ 3, /* gridheight */ 1,
 						/* weightx */ 1.0, /* weighty */ 1.0,
 						/* anchor */ GridBagConstraints.SOUTH,
 						/* fill */ GridBagConstraints.HORIZONTAL,
@@ -117,7 +130,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 		this.add(statusJPanel,
 				new GridBagConstraints(
 						/* gridx */ 0, /* gridy */ 3,
-						/* gridwidth */ 2, /* gridheight */ 1,
+						/* gridwidth */ 3, /* gridheight */ 1,
 						/* weightx */ 1.0, /* weighty */ 1.0,
 						/* anchor */ GridBagConstraints.CENTER,
 						/* fill */ GridBagConstraints.HORIZONTAL,
@@ -128,7 +141,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 		this.add(consoleJTabbedPane,
 				new GridBagConstraints(
 						/* gridx */ 0, /* gridy */ 4,
-						/* gridwidth */ 2, /* gridheight */ 1,
+						/* gridwidth */ 3, /* gridheight */ 1,
 						/* weightx */ 1.0, /* weighty */ 1000.0,
 						/* anchor */ GridBagConstraints.CENTER,
 						/* fill */ GridBagConstraints.BOTH,
@@ -163,11 +176,11 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 		statusJPanel.setText(text, delay);
 	}
 	
-	public UIStates getUIState() {
+	public UIStatesHandler.UIStates getUIState() {
 		return uiState;
 	}
 
-	public void setUIState(UIStates uiState) {
+	public void setUIState(UIStatesHandler.UIStates uiState) {
 		this.uiState = uiState;
 		
 		xyzJPanel.setUIState(uiState);
@@ -175,8 +188,8 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 		auxJPanel.setUIState(uiState);
 		
 		switch(uiState) {
-		case MANUAL:
-			setStatusText("Manual mode", MESSAGE_DELAY);
+		case READY:
+			setStatusText("Ready", MESSAGE_DELAY);
 
 			break;
 		case FILE_OPENED:
@@ -191,16 +204,11 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 			setStatusText("Player paused", MESSAGE_DELAY);
 
 			break;
-//		case WAITING:
-//
-//			break;
+		case WAITING:
+			setStatusText("Waiting for rStep");
+			break;
 		}
 		
-	}
-	
-	private void loadPrefs() {
-		// TODO: set the open JFileChooser on the last opened directory
-		// TODO: set the JFrame on its last position and size
 	}
 
 }

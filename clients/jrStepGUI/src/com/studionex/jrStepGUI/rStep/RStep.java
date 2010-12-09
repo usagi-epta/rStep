@@ -21,47 +21,59 @@ package com.studionex.jrStepGUI.rStep;
  * Contact info: jrstepgui@studionex.com
  */
 
-import java.io.File;
 import java.io.PrintStream;
 import java.util.Vector;
 
-import com.studionex.event.EventManager;
+import org.bushe.swing.event.EventBus;
+
 import com.studionex.rStep.CommunicationException;
 import com.studionex.rStep.ConnectionException;
-import com.studionex.rStep.ProtocolException;
+import com.studionex.rStep.input.InputEvent;
+import com.studionex.rStep.input.InputEventListener;
 
 /**
- * This class is a wrapper around com.studionex.rStep.RStep. It catches the exceptions thrown and fires events instead.
+ * This class is a wrapper around com.studionex.rStep.RStep.
  * This class also provides GCode file playing methods through delegation to a PlayThread instance.
  * 
  * @author Jean-Louis Paquelin
  * @see com.studionex.rStep.RStep
  * @see com.studionex.jrStepGUI.rStep.PlayThread
  */
-public class RStep implements RStepEventListener {
-	private EventManager<RStepEventListener, RStepEvent> eventManager = new EventManager<RStepEventListener, RStepEvent>();
-	
+public class RStep implements InputEventListener {
 	private com.studionex.rStep.RStep rStep;
-	private PlayThread playThread;
-
+	
 	public RStep() {
 		rStep = new com.studionex.rStep.RStep();
+
+		// listen to the rStep outputs
+		rStep.add(this);
 	}
 
-	protected com.studionex.rStep.RStep getRStep() {
+	private com.studionex.rStep.RStep getRStep() {
 		return rStep;
 	}
+	
+	public void setSerialMonitor(PrintStream monitorStream) {
+		getRStep().setSerialMonitor(monitorStream);
+	}
 
-	public void connect(String serialPortName) {
+	public boolean isTimestamping() {
+		return getRStep().isTimestamping();
+	}
+
+	public void setTimestamping(boolean timestamping) {
+		getRStep().setTimestamping(timestamping);
+	}
+
+	public boolean connect(String serialPortName) {
 		try {
 			getRStep().connect(serialPortName);
 		} catch (ConnectionException e) {
-			fire(new RStepEvent(this, e));
-		} catch (CommunicationException e) {
-			fire(new RStepEvent(this, e));
-		} catch (ProtocolException e) {
-			fire(new RStepEvent(this, e));
+			// TODO: log this?
+			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 
 	public boolean isConnected() {
@@ -72,35 +84,27 @@ public class RStep implements RStepEventListener {
 		getRStep().disconnect();
 	}
 
-	public void reset() {
+	public boolean reset() {
 		try {
 			getRStep().reset();
 		} catch (ConnectionException e) {
-			fire(new RStepEvent(this, e));
-		} catch (CommunicationException e) {
-			fire(new RStepEvent(this, e));
-		} catch (ProtocolException e) {
-			fire(new RStepEvent(this, e));
+			// TODO: log this?
+			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 
-	/**
-	 * Hooks up a PrintStream to monitor the rStep I/Os.
-	 * @param monitorStream
-	 */
-	public void setSerialMonitor(PrintStream monitorStream) {
-		getRStep().setSerialMonitor(monitorStream);
-	}
-	
 	/**
 	 * This method sends command string to rStep.
 	 * It splits the command on G and M codes and sends each one by one.
 	 *  
 	 * @param command
+	 * @param waitCompletion if true the caller will wait for the rStep reply
 	 */
-	public void sendExpectOk(String command) {
+	public void send(final String command, final boolean waitCompletion) {
 		// split command in single commands
-		Vector<String> commands = new Vector<String>();
+		final Vector<String> commands = new Vector<String>();
 		String[] splittedCommand = command.split(" |\t"); 
 		
 		String singleCommand = "";
@@ -119,93 +123,50 @@ public class RStep implements RStepEventListener {
 		if(!singleCommand.isEmpty())
 			commands.add(singleCommand);
 		
-		if(commands.size() > 1)
-			System.out.println("Splitting " + command);
-		for(String c: commands) {
-			sendExpectOkNoSplit(c);
+		if(!commands.isEmpty()) {
+			EventBus.publish("Send", command);
+
+			if(commands.size() > 1)
+				System.out.println("Splitting " + command);
+			
+			Thread sendThread = new Thread() {
+				public void run() {
+					for(String c: commands) {
+						try {
+							getRStep().sendAndWaitReply(c);
+						} catch (CommunicationException e) {
+							// TODO: log this?
+							e.printStackTrace();
+							EventBus.publish("CommunicationException", command);
+						}
+					}
+					if(!waitCompletion)
+						// if waitCompletion the event will be published after the thread finishes
+						// see the join() call below
+						EventBus.publish("Sent", command);
+				}
+			};
+			
+			sendThread.start();
+			
+			if(waitCompletion)
+				try {
+					sendThread.join();
+					EventBus.publish("Sent", command);
+				} catch (InterruptedException e) {
+					// TODO: log this?
+					e.printStackTrace();
+				}
 		}
 	}
-	
+
 	/**
-	 * Sends the command to rStep providing some feedback on System.out and System.err.
-	 * 
-	 * @param command
+	 * Low level events aren't suited to be used there as it isn't allowed to invoke any Swing method
+	 * outside of the Swing thread. So, This method receives the events from the low level RStep instance
+	 * and adapt them to the Swing framework by using an eventbus.
+	 * @see http://www.eventbus.org/
 	 */
-	private void sendExpectOkNoSplit(String command) {
-		try {
-			getRStep().sendExpectOk(command);
-		} catch (CommunicationException e) {
-			e.printStackTrace();
-			System.out.println("[an error occured while exchanging data with rStep]");
-			// pause player
-			if(playerIsPlaying())
-				playerPause();
-		} catch (ProtocolException e) {
-			String reply = e.getProtocolError();
-			System.err.println(e.getMessage());
-		}
-	}
-
-	public void openFile(File gcodeFile) {
-		playThread = new PlayThread(gcodeFile, this, this);
-	}
-	
-	public boolean hasPlayer() {
-		return playThread != null;
-	}
-	
-	public boolean playerIsPlaying() {
-		return hasPlayer() && playThread.isPlaying();
-	}
-	
-	public void playerPlay() {
-		if(hasPlayer())
-			playThread.play();
-	}
-
-	public void playerPause() {
-		if(hasPlayer())
-			playThread.pause();
-	}
-	
-	public void playerAbort() {
-		if(hasPlayer()) {
-			playThread.abort();
-			try {
-				playThread.join();
-			} catch (InterruptedException e) {
-				// TODO: log this?
-				//e.printStackTrace();
-			}
-			playThread = null;
-		}
-	}
-	
-	/**
-	 * This method is called by the playThread.
-	 * It is declared public to provide the RStepEventListener interface but it is used locally only.
-	 * It forwards the playThreadEvents to the registered listeners.
-	 * 
-	 * @param event
-	 */
-	public void eventHandler(RStepEvent event) {
-		if(event.getSource() == playThread)
-			fire(event);
-	}
-
-	public void addEventListener(RStepEventListener eventListener) { eventManager.add(eventListener); }
-	public void removeEventListener(RStepEventListener eventListener) { eventManager.remove(eventListener); }
-	private void fire(RStepEvent event) { eventManager.fire(event); }
-
-	@Override
-	protected void finalize() throws Throwable {
-	    try {
-	    	if(playThread != null)
-	    		playerAbort();
-	    	if(isConnected())
-	    		disconnect();
-	    } finally {
-	        super.finalize();
-	    }
+	public void eventHandler(InputEvent inputEvent) {
+		EventBus.publish(inputEvent.toString(), inputEvent);
 	}
 }

@@ -70,30 +70,32 @@ public class InputParser {
 				fire(new ReplyEvent(this, ReplyEvent.Kind.ADDOBJ_FULL_ERROR));
 			} else if(e.equals("NOT_SUPPORTED")) {
 				fire(new ReplyEvent(this, ReplyEvent.Kind.GCODE_NOT_SUPPORTED_ERROR));
+			} else if(e.equals("CHECKSUM")) {
+				fire(new ReplyEvent(this, ReplyEvent.Kind.GCODE_NOT_SUPPORTED_ERROR));
 			} else
 				fire(new SyntaxMessageEvent(this, s));
 		} else if(sUp.matches("^MSG .*$")) {
-			String e = sUp.replaceFirst("^MSG *(.*)$", "$1");
+			String m = sUp.replaceFirst("^MSG *(.*)$", "$1");
 			Double[] v;
-			if(e.matches("SBI *\\(.*\\)$") && (v = parse_numbers(3, e)) != null) {
+			if(m.matches("SBI *\\(.*\\)$") && (v = parse_numbers(3, m)) != null) {
 				fire(new StepByInchMessageEvent(this, v[0].intValue(), v[1].intValue(), v[2].intValue()));
 				
-			} else if(e.matches("MFR *\\(.*\\)$") && (v = parse_numbers(3, e)) != null) {
+			} else if(m.matches("MFR *\\(.*\\)$") && (v = parse_numbers(3, m)) != null) {
 				fire(new FeedRateMessageEvent(this, v[0], v[1], v[2]));
 				
-			} else if(e.matches("CUR *\\(.*\\)$") && (v = parse_numbers(3, e)) != null) {
+			} else if(m.matches("CUR *\\(.*\\)$") && (v = parse_numbers(3, m)) != null) {
 				fire(new CurrentMessageEvent(this, v[0], v[1], v[2]));
 				
-			} else if(e.matches("STEP *\\(.*\\)$") && (v = parse_numbers(1, e)) != null) {
+			} else if(m.matches("STEP *\\(.*\\)$") && (v = parse_numbers(1, m)) != null) {
 				fire(new SteppingMessageEvent(this, v[0].intValue()));
 				
-			} else if(e.matches("ABS *\\(.*\\)$") && (v = parse_numbers(1, e)) != null) {
+			} else if(m.matches("ABS *\\(.*\\)$") && (v = parse_numbers(1, m)) != null) {
 				fire(new AbsoluteModeMessageEvent(this, !(v[0].intValue() == 0)));
 				
-			} else if(e.matches("COORD *\\(.*\\)$") && (v = parse_numbers(3, e)) != null) {
+			} else if(m.matches("COORD *\\(.*\\)$") && (v = parse_numbers(3, m)) != null) {
 				fire(new CoordinatesMessageEvent(this, v[0], v[1], v[2]));
 
-			} else if(e.matches("DEBUG *\\(.*\\)$")) {
+			} else if(m.matches("DEBUG *\\(.*\\)$")) {
 				fire(new DebugMessageEvent(this, s.replaceFirst("^.*\\((.*)\\)$", "$1")));
 
 			} else
