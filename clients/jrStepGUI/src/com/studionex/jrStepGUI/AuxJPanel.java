@@ -53,7 +53,7 @@ public class AuxJPanel extends JPanel implements UIStatesHandler {
 		this.application = application;
 		
 		buildUI();
-		setUIState(UIStatesHandler.UIStates.WAITING);
+		setUIState(UIStatesHandler.UIStates.STARTUP);
 	}
 	
 	private void buildUI() {
@@ -193,6 +193,7 @@ public class AuxJPanel extends JPanel implements UIStatesHandler {
 		case PLAYING:
 		case PAUSED:
 		case WAITING:
+		case STARTUP:
 			motorOnJButton.setEnabled(false);
 			motorOffJButton.setEnabled(false);
 			inchJButton.setEnabled(false);

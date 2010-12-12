@@ -1,0 +1,101 @@
+This document counts all the classes publishing messages on the EventBus and and their listeners.
+
+2010-12-12
+* All the messages should have the following form:
+  - String topic: <source class name> + <a string that allows to distinguish the different sources of messages within the class>
+  - Object o: some data
+
+com.studionex.jrStepGUIrStep.RStep
+	EventBus.publish("RStep Send", String command)
+		before the command is sent
+	EventBus.publish("RStep CommunicationException", String command)
+		when com.studionex.rStep.RStep throws a CommunicationException
+	EventBus.publish("RStep Sent", String command)
+		after the the command is replied
+	EventBus.publish("RStep Reply: OK", ReplyEvent inputEvent)
+	EventBus.publish("RStep Reply: CURRENT_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("RStep Reply: GCODE_NOT_SUPPORTED_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("RStep Reply: INIT_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("RStep Reply: STEP_TYPE_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("RStep Reply: ADDOBJ_FULL_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("RStep RStep Reply: CHECKSUM_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("RStep Step by inch: .*", StepByInchMessageEvent inputEvent)
+	EventBus.publish("RStep Feed rate: .*", FeedRateMessageEvent inputEvent)
+	EventBus.publish("RStep Current: .*", CurrentMessageEvent inputEvent)
+	EventBus.publish("RStep Stepping: .*", SteppingMessageEvent inputEvent)
+	EventBus.publish("RStep Absolute mode: .*", AbsoluteModeMessageEvent inputEvent)
+	EventBus.publish("RStep Coordinates: .*", CoordinatesMessageEvent inputEvent)
+	EventBus.publish("RStep Debug: .*", DebugMessageEvent inputEvent)
+	EventBus.publish("RStep START", StartEvent inputEvent)
+	EventBus.publish("RStep Syntax error: .*", SyntaxMessageEvent inputEvent)
+	
+	com.studionex.jrStepGUI.CoordinatesJPanel.CoordinatesJPanel
+		EventBus.subscribe(Pattern.compile("RStep Coordinates:.*"), infoJPanel)
+		EventBus.subscribe(Pattern.compile("RStep Step by inch:.*"), infoJPanel);
+	
+	com.studionex.jrStepGUI.Application.Application
+		EventBus.subscribe("RStep START", application)
+		EventBus.subscribe(Pattern.compile("RStep Reply:.*"), application)
+		EventBus.subscribe(Pattern.compile("RStep Debug:.*"), application)
+		EventBus.subscribe(Pattern.compile("RStep Syntax error:.*"), application)
+		
+		EventBus.subscribe(Pattern.compile("RStep Sen[dt]"), application)
+		EventBus.subscribe(Pattern.compile("RStep CommunicationException"), application)
+
+com.studionex.jrStepGUIrStep.PlayThread
+	EventBus.publish("PlayThread FILE_OPENED", File gcodeFile)
+		when a GCode file has been opened
+	EventBus.publish("PlayThread PAUSED", null)
+		when the playback is paused
+	EventBus.publish("PlayThread PLAYING", null)
+		when playing back
+	EventBus.publish("PlayThread ABORTED", null)
+		when the playback has been aborted
+	EventBus.publish("PlayThread FINISHED", null)
+		when the player reaches the end of the GCode file
+	EventBus.publish("PlayThread IOException", IOException e)
+		when an IOException occured
+		
+	com.studionex.jrStepGUI.Application.Application
+		EventBus.subscribe(Pattern.compile("PlayThread.*"), application)
+
+
+2010-12-10
+
+com.studionex.jrStepGUIrStep.RStep
+	EventBus.publish("Send", String command)
+		before the command is sent
+	EventBus.publish("CommunicationException", String command)
+		when com.studionex.rStep.RStep throws a CommunicationException
+	EventBus.publish("Sent", String command)
+		after the the command is replied
+	EventBus.publish("Reply: OK", ReplyEvent inputEvent)
+	EventBus.publish("Reply: CURRENT_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("Reply: GCODE_NOT_SUPPORTED_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("Reply: INIT_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("Reply: STEP_TYPE_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("Reply: ADDOBJ_FULL_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("Reply: CHECKSUM_ERROR", ReplyEvent inputEvent)
+	EventBus.publish("Step by inch: .*", StepByInchMessageEvent inputEvent)
+	EventBus.publish("Feed rate: .*", FeedRateMessageEvent inputEvent)
+	EventBus.publish("Current: .*", CurrentMessageEvent inputEvent)
+	EventBus.publish("Stepping: .*", SteppingMessageEvent inputEvent)
+	EventBus.publish("Absolute mode: .*", AbsoluteModeMessageEvent inputEvent)
+	EventBus.publish("Coordinates: .*", CoordinatesMessageEvent inputEvent)
+	EventBus.publish("Debug: .*", DebugMessageEvent inputEvent)
+	EventBus.publish("START", StartEvent inputEvent)
+	EventBus.publish("Syntax error: .*", SyntaxMessageEvent inputEvent)
+
+com.studionex.jrStepGUIrStep.PlayThread
+	EventBus.publish("Player state: READY", RStepPlayerEvent event)
+		when a GCode file has been opened
+	EventBus.publish("Player state: PAUSED", RStepPlayerEvent event)
+		when the playback is paused
+	EventBus.publish("Player state: PLAYING", RStepPlayerEvent event)
+		when playing back
+	EventBus.publish("Player state: ABORTED", RStepPlayerEvent event)
+		when the playback has been aborted
+	EventBus.publish("Player state: FINISHED", RStepPlayerEvent event)
+		when the player reaches the end of the GCode file
+	EventBus.publish("IOException: ", IOException e)
+		when an IOException occured

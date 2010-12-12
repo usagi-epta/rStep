@@ -124,7 +124,7 @@ public class RStep implements InputEventListener {
 			commands.add(singleCommand);
 		
 		if(!commands.isEmpty()) {
-			EventBus.publish("Send", command);
+			EventBus.publish("RStep Send", command);
 
 			if(commands.size() > 1)
 				System.out.println("Splitting " + command);
@@ -137,13 +137,13 @@ public class RStep implements InputEventListener {
 						} catch (CommunicationException e) {
 							// TODO: log this?
 							e.printStackTrace();
-							EventBus.publish("CommunicationException", command);
+							EventBus.publish("RStep CommunicationException", command);
 						}
 					}
 					if(!waitCompletion)
 						// if waitCompletion the event will be published after the thread finishes
 						// see the join() call below
-						EventBus.publish("Sent", command);
+						EventBus.publish("RStep Sent", command);
 				}
 			};
 			
@@ -152,7 +152,7 @@ public class RStep implements InputEventListener {
 			if(waitCompletion)
 				try {
 					sendThread.join();
-					EventBus.publish("Sent", command);
+					EventBus.publish("RStep Sent", command);
 				} catch (InterruptedException e) {
 					// TODO: log this?
 					e.printStackTrace();
@@ -167,6 +167,6 @@ public class RStep implements InputEventListener {
 	 * @see http://www.eventbus.org/
 	 */
 	public void eventHandler(InputEvent inputEvent) {
-		EventBus.publish(inputEvent.toString(), inputEvent);
+		EventBus.publish("RStep " + inputEvent.toString(), inputEvent);
 	}
 }

@@ -43,7 +43,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 
 	private XYZJPanel xyzJPanel;
 	private StepJPanel stepJPanel;
-	private CoordinatesJPanel coordinatesJPanel;
+	private InfoJPanel infoJPanel;
 	private AuxJPanel auxJPanel;
 	private FileJPanel fileJPanel;
 	private StatusJPanel statusJPanel;
@@ -59,7 +59,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 		this.application = application;
 		
 		buildUI();
-		setUIState(UIStatesHandler.UIStates.WAITING);
+		setUIState(UIStatesHandler.UIStates.STARTUP);
 	}
 	
 	private void buildUI() {
@@ -89,9 +89,9 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 						/* insets */ new Insets(0, 0, 0, 0),
 						/* ipadx */ 0, /* ipady */ 0));
 		
-		coordinatesJPanel = new CoordinatesJPanel();
-		coordinatesJPanel.setBorder(MainJPanel.createBorder());
-		this.add(coordinatesJPanel,
+		infoJPanel = new InfoJPanel();
+		infoJPanel.setBorder(MainJPanel.createBorder());
+		this.add(infoJPanel,
 				new GridBagConstraints(
 						/* gridx */ 1, /* gridy */ 0,
 						/* gridwidth */ 1, /* gridheight */ 2,
@@ -205,6 +205,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 
 			break;
 		case WAITING:
+		case STARTUP:
 			setStatusText("Waiting for rStep");
 			break;
 		}

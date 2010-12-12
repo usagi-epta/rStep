@@ -22,7 +22,7 @@ package com.studionex.jrStepGUI;
  */
 
 public interface UIStatesHandler {
-	public static enum UIStates {READY, FILE_OPENED, PLAYING, PAUSED, WAITING};
+	public static enum UIStates {STARTUP, READY, FILE_OPENED, PLAYING, PAUSED, WAITING};
 
 	public UIStates getUIState();
 	public void setUIState(UIStates uiState);

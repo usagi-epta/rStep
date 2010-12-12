@@ -54,6 +54,12 @@ Once the library is installed, you'll just have to run jrStepGUI.jar.
 
 STORY
 
+2010-12-12
+* Pause and Abort button behavior fixed (enabled when playing back).
+* SBI display in the InfoJPanel class (previously called CoordinatesJPanel).
+  The values are initialized by the recall of stored values (M201) immediately
+  after receiving the START reply.
+
 2010-12-09
 * Use of an EventBus to share the events between multiple UI classes
   (http://www.eventbus.org/).

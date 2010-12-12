@@ -31,7 +31,7 @@ import org.bushe.swing.event.EventBus;
 
 
 public class PlayThread extends Thread {
-	public static enum PlayerStates {READY, PAUSED, PLAYING, ABORTED, FINISHED};
+	public static enum PlayerStates {FILE_OPENED, PAUSED, PLAYING, ABORTED, FINISHED};
 	public PlayerStates changeStateTo;
 
 	private final File gcodeFile;
@@ -46,14 +46,12 @@ public class PlayThread extends Thread {
 		
 		try {
 			gcodeFileHandler = new GCodeFileHandler(gcodeFile);
-			changeStateTo = PlayerStates.READY;
-			RStepPlayerEvent event = new RStepPlayerEvent(this, changeStateTo);
-			EventBus.publish(event.toString(), event);
+			changeStateTo = PlayerStates.FILE_OPENED;
+			EventBus.publish("PlayThread " + changeStateTo, gcodeFile);
 			start();
 		} catch (IOException e) {
 			// input file problem
-			RStepPlayerEvent event = new RStepPlayerEvent(this, e);
-			EventBus.publish(event.toString(), event);
+			EventBus.publish("PlayThread IOException", e);
 		}
 	}
 
@@ -91,8 +89,7 @@ public class PlayThread extends Thread {
 					try {
 						line = gcodeFileHandler.getLine();
 					} catch (IOException e) {
-						RStepPlayerEvent event = new RStepPlayerEvent(this, e);
-						EventBus.publish(event.toString(), event);
+						EventBus.publish("PlayThread IOException", e);
 					}
 					if(line == null) {
 						// no more line available
@@ -100,16 +97,14 @@ public class PlayThread extends Thread {
 						changeStateTo = PlayerStates.FINISHED;
 					}
 					if(changeStateTo != state) {
-						RStepPlayerEvent event = new RStepPlayerEvent(this, changeStateTo);
-						EventBus.publish(event.toString(), event);
+						EventBus.publish("PlayThread " + changeStateTo, null);
 						state = changeStateTo;
 					}
 					break;
-				case READY:
+				case FILE_OPENED:
 				case PAUSED:
 					if(changeStateTo != state) {
-						RStepPlayerEvent event = new RStepPlayerEvent(this, changeStateTo);
-						EventBus.publish(event.toString(), event);
+						EventBus.publish("PlayThread " + changeStateTo, null);
 						state = changeStateTo;
 					}
 					try { 
@@ -123,8 +118,7 @@ public class PlayThread extends Thread {
 				case FINISHED:
 					gcodeFileHandler.close();
 					gcodeFileHandler = null;
-					RStepPlayerEvent event = new RStepPlayerEvent(this, changeStateTo);
-					EventBus.publish(event.toString(), event);
+					EventBus.publish("PlayThread " + changeStateTo, null);
 					break;
 				}
 			}

@@ -23,7 +23,7 @@ package com.studionex.rStep.input;
 
 @SuppressWarnings("serial")
 public class ReplyEvent extends InputEvent {
-	public static enum Kind {OK, CURRENT_ERROR, GCODE_NOT_SUPPORTED_ERROR, INIT_ERROR, STEP_TYPE_ERROR, ADDOBJ_FULL_ERROR, CHECKSUM};
+	public static enum Kind {OK, CURRENT_ERROR, GCODE_NOT_SUPPORTED_ERROR, INIT_ERROR, STEP_TYPE_ERROR, ADDOBJ_FULL_ERROR, CHECKSUM_ERROR};
 
 	private final Kind kind;
 

@@ -71,7 +71,7 @@ public class InputParser {
 			} else if(e.equals("NOT_SUPPORTED")) {
 				fire(new ReplyEvent(this, ReplyEvent.Kind.GCODE_NOT_SUPPORTED_ERROR));
 			} else if(e.equals("CHECKSUM")) {
-				fire(new ReplyEvent(this, ReplyEvent.Kind.GCODE_NOT_SUPPORTED_ERROR));
+				fire(new ReplyEvent(this, ReplyEvent.Kind.CHECKSUM_ERROR));
 			} else
 				fire(new SyntaxMessageEvent(this, s));
 		} else if(sUp.matches("^MSG .*$")) {

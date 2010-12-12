@@ -30,12 +30,6 @@ public class RStepPlayer {
 	public void playerAbort() {
 		if(hasPlayer()) {
 			playThread.abort();
-			try {
-				playThread.join();
-			} catch (InterruptedException e) {
-				// TODO: log this?
-				//e.printStackTrace();
-			}
 			playThread = null;
 		}
 	}

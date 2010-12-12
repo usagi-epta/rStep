@@ -60,7 +60,8 @@ public class FileJPanel extends JPanel implements UIStatesHandler {
 		this.mainJPanel = mainJPanel;
 		
 		buildUI();
-		setUIState(UIStatesHandler.UIStates.WAITING);
+		setUIState(UIStatesHandler.UIStates.STARTUP);
+		
 	}
 	
 	private void buildUI() {
@@ -223,7 +224,7 @@ public class FileJPanel extends JPanel implements UIStatesHandler {
 
 	public void setUIState(UIStatesHandler.UIStates uiState) {
 		this.uiState = uiState;
-		
+
 		switch(uiState) {
 		case READY:
 			pathJTextField.setText(NO_FILE_MESSAGE);
@@ -259,6 +260,7 @@ public class FileJPanel extends JPanel implements UIStatesHandler {
 
 			break;
 		case WAITING:
+		case STARTUP:
 			openJButton.setEnabled(false);
 
 			pauseJButton.setEnabled(false);

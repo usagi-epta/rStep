@@ -54,7 +54,7 @@ public class XYZJPanel extends JPanel implements UIStatesHandler {
 		this.mainJPanel = mainJPanel;
 		
 		buildUI();
-		setUIState(UIStatesHandler.UIStates.WAITING);
+		setUIState(UIStatesHandler.UIStates.STARTUP);
 	}
 	
 	private void buildUI() {
@@ -170,6 +170,7 @@ public class XYZJPanel extends JPanel implements UIStatesHandler {
 		case PLAYING:
 		case PAUSED:
 		case WAITING:
+		case STARTUP:
 			xPlusJButton.setEnabled(false);
 			xMinusJButton.setEnabled(false);
 			yPlusJButton.setEnabled(false);

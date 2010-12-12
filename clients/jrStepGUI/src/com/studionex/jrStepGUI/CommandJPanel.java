@@ -47,7 +47,7 @@ public class CommandJPanel extends JPanel implements UIStatesHandler {
 		this.application = application;
 		
 		buildUI();
-		setUIState(UIStatesHandler.UIStates.WAITING);
+		setUIState(UIStatesHandler.UIStates.STARTUP);
 	}
 	
 	private void buildUI() {
@@ -106,6 +106,7 @@ public class CommandJPanel extends JPanel implements UIStatesHandler {
 		case PLAYING:
 		case PAUSED:
 		case WAITING:
+		case STARTUP:
 			commandJComboBox.setEnabled(false);
 			executeJButton.setEnabled(false);
 			break;
