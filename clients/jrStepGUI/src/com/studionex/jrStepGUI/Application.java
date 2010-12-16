@@ -136,14 +136,17 @@ public class Application extends JFrame implements EventTopicSubscriber<Object> 
 				setUIState(UIStates.READY);
 				
 			} else if(topic.equals("RStep CommunicationException")) {
-				errorDialog("A communication error occured while sending " + (String)data);
+				errorDialog("A communication error occured while sending " + (String)data, JOptionPane.ERROR_MESSAGE);
 				
 			} else if(data instanceof InputEvent) {
 				if(data instanceof ReplyEvent && isUIStateStartup()) {
 					ReplyEvent replyEvent = (ReplyEvent)data;
 					
 					if(!replyEvent.isOk()) {
-						errorDialog("rStep returned some error at startup: " + replyEvent.getKind() + "\nIt may be caused by a badly initialized rStep EEPROM.\n");
+						errorDialog(
+							"rStep returned some error at startup: " + replyEvent.getKind() +
+								"\nIt may be caused by a badly initialized rStep EEPROM.\n",
+							JOptionPane.ERROR_MESSAGE);
 					}
 		
 					setUIState(UIStates.READY);
@@ -152,12 +155,13 @@ public class Application extends JFrame implements EventTopicSubscriber<Object> 
 					if(!isUIStateStartup()) {
 						if(isUIStatePlayingOrPaused())
 							playerAbort();
-						errorDialog("rStep restarted.");
+						errorDialog("rStep restarted.", JOptionPane.WARNING_MESSAGE);
 
 						setUIState(UIStates.READY);
 
 					} else {
-						send("M201");
+						System.out.println();
+						setUIState(UIStates.READY);
 					}
 					
 				} else if(data instanceof DebugMessageEvent) {
@@ -166,7 +170,7 @@ public class Application extends JFrame implements EventTopicSubscriber<Object> 
 				} else if(data instanceof SyntaxMessageEvent) {
 					SyntaxMessageEvent messageEvent = (SyntaxMessageEvent)data;
 					System.out.println((SyntaxMessageEvent)data);
-					errorDialog("rStep returned a badly formatted message: " + messageEvent.getMessage() + "\nThis should never occur, please report it.");
+					errorDialog("rStep returned a badly formatted message: " + messageEvent.getMessage() + "\nThis should never occur, please report it.", JOptionPane.ERROR_MESSAGE);
 		
 				}
 			}
@@ -186,7 +190,7 @@ public class Application extends JFrame implements EventTopicSubscriber<Object> 
 				setUIState(UIStates.READY);
 				
 			} else if(topic.equals("PlayThread IOException")) {
-				errorDialog("An error occured while reading the GCode file.\n" + (IOException)data);
+				errorDialog("An error occured while reading the GCode file.\n" + (IOException)data, JOptionPane.ERROR_MESSAGE);
 				
 			}
 		}
@@ -205,8 +209,8 @@ public class Application extends JFrame implements EventTopicSubscriber<Object> 
 		return uiState == UIStates.PAUSED || uiState == UIStates.PLAYING;
 	}
 	
-	public void errorDialog(String message) {
-		JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION);
+	public void errorDialog(String message, int messageType) {
+		JOptionPane optionPane = new JOptionPane(message, messageType, JOptionPane.DEFAULT_OPTION);
 		optionPane.createDialog(this, null).setVisible(true); 
 	}
 	

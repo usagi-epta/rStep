@@ -31,7 +31,7 @@ public class SteppingMessageEvent extends InputEvent {
 		this.stepping = stepping;
 	}
 
-	protected Integer getStepping() { return stepping; }
+	public Integer getStepping() { return stepping; }
 
 	@Override
 	public String toString() {

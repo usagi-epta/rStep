@@ -89,7 +89,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 						/* insets */ new Insets(0, 0, 0, 0),
 						/* ipadx */ 0, /* ipady */ 0));
 		
-		infoJPanel = new InfoJPanel();
+		infoJPanel = new InfoJPanel(application);
 		infoJPanel.setBorder(MainJPanel.createBorder());
 		this.add(infoJPanel,
 				new GridBagConstraints(
@@ -184,6 +184,7 @@ public class MainJPanel extends JPanel implements UIStatesHandler {
 		this.uiState = uiState;
 		
 		xyzJPanel.setUIState(uiState);
+		infoJPanel.setUIState(uiState);
 		fileJPanel.setUIState(uiState);
 		auxJPanel.setUIState(uiState);
 		

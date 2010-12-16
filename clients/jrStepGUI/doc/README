@@ -53,6 +53,9 @@ btw, you need a working JRE 1.5 or greater.
 Once the library is installed, you'll just have to run jrStepGUI.jar.
 
 STORY
+2010-12-16
+* A little dialog (HardwareConfigJDialog) to set up the rStep non-volatile
+  memory has been added.
 
 2010-12-12
 * Pause and Abort button behavior fixed (enabled when playing back).
