@@ -29,9 +29,8 @@ com.studionex.jrStepGUIrStep.RStep
 	EventBus.publish("RStep START", StartEvent inputEvent)
 	EventBus.publish("RStep Syntax error: .*", SyntaxMessageEvent inputEvent)
 	
-	com.studionex.jrStepGUI.CoordinatesJPanel.CoordinatesJPanel
+	com.studionex.jrStepGUI.CoordinatesJPanel.InfoJPanel
 		EventBus.subscribe(Pattern.compile("RStep Coordinates:.*"), infoJPanel)
-		EventBus.subscribe(Pattern.compile("RStep Step by inch:.*"), infoJPanel);
 	
 	com.studionex.jrStepGUI.Application.Application
 		EventBus.subscribe("RStep START", application)
@@ -41,6 +40,13 @@ com.studionex.jrStepGUIrStep.RStep
 		
 		EventBus.subscribe(Pattern.compile("RStep Sen[dt]"), application)
 		EventBus.subscribe(Pattern.compile("RStep CommunicationException"), application)
+
+	com.studionex.jrStepGUI.HardwareConfigJDialog.HardwareConfigJDialog		
+		EventBus.subscribe(Pattern.compile("RStep Step by inch:.*"), hardwareConfigJDialog);
+		EventBus.subscribe(Pattern.compile("RStep Feed rate:.*"), hardwareConfigJDialog);
+		EventBus.subscribe(Pattern.compile("RStep Current:.*"), hardwareConfigJDialog);
+		EventBus.subscribe(Pattern.compile("RStep Stepping:.*"), hardwareConfigJDialog);
+		
 
 com.studionex.jrStepGUIrStep.PlayThread
 	EventBus.publish("PlayThread FILE_OPENED", File gcodeFile)
