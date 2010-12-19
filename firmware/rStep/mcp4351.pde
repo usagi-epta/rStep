@@ -1,10 +1,7 @@
-#define MSP4351_CS 14
+
 #define mcp4351_end() SPIend()
 
-#define SCK 13
-#define MOSI 11
-#define MISO 12
-#define SS 10
+
 #define SPI_CLOCK_DIV2 0x04
 #define SPI_MODE0 0x00
 #define SPI_MODE1 0x04

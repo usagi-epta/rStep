@@ -53,6 +53,14 @@
 #define DIR_Z 19
 #define MOTOR_PIN 6
 
+
+#define SCK 13
+#define MOSI 11
+#define MISO 12
+#define SS 10
+#define MSP4351_CS 14
+
+
 /* specify the port and pin numbers - you need to look this up 
 ** on the schematic for the particular arduino */
 #define _STEP_PORT PORTB

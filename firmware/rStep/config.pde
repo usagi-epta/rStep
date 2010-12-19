@@ -28,17 +28,26 @@
 
 void config_save(void) {
   uint16_t i;
+  uint8_t checksum = 0;
   uint8_t *ptr = (uint8_t*)(&config);
   for (i=0; i<sizeof(struct config_t); i++) {
     EEPROM.write(i,ptr[i]);
+    checksum += ptr[i];
   }
+  EEPROM.write(i+1,checksum);
 }
 
 void config_read(void) {
   uint16_t i;
+  uint8_t checksum = 0;
   uint8_t *ptr = (uint8_t*)(&config);
   for (i=0; i<sizeof(struct config_t); i++) {
     ptr[i] = EEPROM.read(i);
+    checksum += ptr[i];
+  }
+  if (EEPROM.read(i+1) != checksum) {
+	//XXX add more error checking code here
+	Serial.println("ERRCHECKSUM");
   }
 }
 

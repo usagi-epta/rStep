@@ -253,11 +253,11 @@ void process_string(uint8_t  *instruction) {
       */
     case 100: //specify currents in AMPS
       if (command_exists('X')) 
-      if (code = setCurrent(CHAN_X, getValue('X'))) config.current.x = code;
+        if (code = setCurrent(CHAN_X, getValue('X'))) config.current.x = code;
       if (command_exists('Y')) 
-      if (code = setCurrent(CHAN_Y, getValue('Y'))) config.current.y = code;
+        if (code = setCurrent(CHAN_Y, getValue('Y'))) config.current.y = code;
       if (command_exists('Z')) 
-      if (code = setCurrent(CHAN_Z, getValue('Z'))) config.current.z = code;
+        if (code = setCurrent(CHAN_Z, getValue('Z'))) config.current.z = code;
       config_save();
       returnOk = true;
       break;
