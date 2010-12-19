@@ -109,7 +109,6 @@ void r_move(float feedrate) {
       _STEP_PORT |= a->direct_step_pin;
       //need to wait 1uS
       __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
-      __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
       __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
       _STEP_PORT &= ~a->direct_step_pin;
     }
@@ -122,8 +121,8 @@ void r_move(float feedrate) {
 
 #ifdef REPORT_DELAY
     // print the move progress each REPORT_DELAY milliseconds.
-    if (millis() > nextProgressReport) {
-      coordinatesMessage(
+    if (!quiet && millis() > nextProgressReport) {
+      MessageCoordinates(
         getLivePosition(0, xaxis_delta_steps),
         getLivePosition(1, yaxis_delta_steps),
         getLivePosition(2, zaxis_delta_steps));
@@ -137,6 +136,15 @@ void r_move(float feedrate) {
   yaxis->current_units = yaxis->target_units;
   zaxis->current_units = zaxis->target_units;
   calculate_deltas();
+
+#ifdef REPORT_DELAY
+    if (!quiet)
+      // print the move progress at the end
+      MessageCoordinates(
+        xaxis->current_units,
+        yaxis->current_units,
+        zaxis->current_units);
+#endif
 
   //Serial.println("DDA_move finished");
   //intRestore(sreg);
@@ -188,12 +196,11 @@ void calculate_deltas() {
     }
   }
 #ifdef DEBUG
-  Serial.print("DeltaSteps:");
-  Serial.print(axis_array[0]->delta_steps);
-  Serial.print(",");
-  Serial.print(axis_array[1]->delta_steps);
-  Serial.print(",");
-  Serial.println(axis_array[2]->delta_steps);
+  Message3F("DeltaSteps",
+    axis_array[0]->delta_steps,
+    axis_array[1]->delta_steps,
+    axis_array[2]->delta_steps,
+    DEC);
 #endif
 }
 
