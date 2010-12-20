@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "messages.h"
 
 bool     quiet;
 uint8_t  command_word[COMMAND_SIZE];
