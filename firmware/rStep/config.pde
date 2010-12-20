@@ -1,3 +1,4 @@
+#include "messages.h"
 
 /*
 // define the parameters of our machine.

@@ -19,7 +19,7 @@
 					Serial.print(y, format);\
 					Serial.print(',');\
 					Serial.print(z, format);\
-					Serial.println(')')\
+					Serial.println(')')
 #define MessageCoordinates(x,y,z) Message3F("Coord",x,y,z,5)
 
 #endif
