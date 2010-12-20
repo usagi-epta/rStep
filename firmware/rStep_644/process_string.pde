@@ -306,8 +306,16 @@ void process_string(uint8_t  *instruction) {
       calculate_deltas();
       return_status = RET_OK;
       break;
+    case 302: //output stauts of limit switches
+      Serial.print("MSG X Y Z ESTOP:");
+      for (uint8_t i=0; i<3; i++) {
+        Serial.print( digitalRead(axis_array[i]->minMax_pin) ? "SHORT " : "OPEN  " );
+      }
+      Serial.print( digitalRead(ESTOP) ? "SHORT ": "OPEN  ");
+      break;
     default:
       Serial.println("ERR NOT_SUPPORTED");
+      break;
     } 
   }
   if (!quiet) {
@@ -327,6 +335,12 @@ void process_string(uint8_t  *instruction) {
     }
   }
 }
+
+
+
+
+
+
 
 
 
