@@ -35,6 +35,13 @@
 #define intDisable()      ({ uint8_t sreg = SREG; cli(); sreg; })
 #define intRestore(sreg)  SREG = sreg 
 #define myMicros() (micros() >> 3)
+
+//misc constants
+//***************************************************************************************
+#define XAXIS 0
+#define YAXIS 1
+#define ZAXIS 2
+
 //pin definitions
 /****************************************************************************************/
 //my config
@@ -76,6 +83,7 @@
 #define MINMAX_X 23
 #define MINMAX_Y 22
 #define MINMAX_Z 26
+#define ESTOP    30
 
 // STRUCTURES
 struct u16_t {

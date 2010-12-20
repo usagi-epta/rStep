@@ -1,6 +1,5 @@
 extern volatile unsigned long timer0_overflow_count;
 
-
 void myStepper_init(void) {
   //Control Pins
   pinMode(MS1, OUTPUT);
@@ -19,6 +18,7 @@ void myStepper_init(void) {
   limitConfig(MINMAX_X);
   limitConfig(MINMAX_Y);
   limitConfig(MINMAX_Z);
+  limitConfig(ESTOP);
 
   //set pin values to stop PWM
   digitalWrite(STEP_X, LOW); 
@@ -74,12 +74,10 @@ void setStep(uint8_t s) {
 
 void myStepper_off(void) {
   digitalWrite(RST, LOW);
- // digitalWrite(SLP, LOW);
 }
 
 void myStepper_on(void) {
   digitalWrite(RST, HIGH);
-//  digitalWrite(SLP, HIGH);
   delay(250); //wait a bit
 }
 

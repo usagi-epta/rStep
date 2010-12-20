@@ -108,6 +108,10 @@ void r_move(float feedrate) {
     if (can_move(a)) {
       _STEP_PORT |= a->direct_step_pin;
       //need to wait 1uS
+      if (F_CPU == 20000000) {
+        //additional delay if running at 20Mhz
+        __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
+      }
       __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
       __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
       _STEP_PORT &= ~a->direct_step_pin;
@@ -138,15 +142,10 @@ void r_move(float feedrate) {
   calculate_deltas();
 
 #ifdef REPORT_DELAY
-    if (!quiet)
-      // print the move progress at the end
-      MessageCoordinates(
-        xaxis->current_units,
-        yaxis->current_units,
-        zaxis->current_units);
+    // Print the move progress at the end
+    if (!quiet) MessageCoordinates( xaxis->current_units, yaxis->current_units, zaxis->current_units);
 #endif
 
-  //Serial.println("DDA_move finished");
   //intRestore(sreg);
 }
 
@@ -196,11 +195,7 @@ void calculate_deltas() {
     }
   }
 #ifdef DEBUG
-  Message3F("DeltaSteps",
-    axis_array[0]->delta_steps,
-    axis_array[1]->delta_steps,
-    axis_array[2]->delta_steps,
-    DEC);
+  Message3F("DeltaSteps", axis_array[0]->delta_steps, axis_array[1]->delta_steps,  axis_array[2]->delta_steps, DEC);
 #endif
 }
 
