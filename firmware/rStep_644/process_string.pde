@@ -308,7 +308,7 @@ void process_string(uint8_t  *instruction) {
       while (!digitalRead(ESTOP)) {
         manual_step(ZAXIS, BACKWARD);
         delay(1);
-      }3
+      }
       zaxis->current_units = 0;
       calculate_deltas();
       return_status = RET_OK;
