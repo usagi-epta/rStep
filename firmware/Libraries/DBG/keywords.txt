@@ -1,0 +1,25 @@
+#######################################
+# Syntax Coloring Map For MCP4351
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+DBG		KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin		KEYWORD2
+out		KEYWORD2
+outPin		KEYWORD2
+outAdv		KEYWORD2
+stepsize	KEYWORD2
+steppers	KEYWORD2
+all		KEYWORD2
+check		KEYWORD2
+checkDir	KEYWORD2
+
+

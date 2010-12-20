@@ -1,0 +1,35 @@
+#######################################
+# Syntax Coloring Map For MAX6675
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+MCP	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+init	KEYWORD2
+init_dbg	KEYWORD2
+stat_ch	KEYWORD2
+stat_ch0	KEYWORD2
+stat_ch1	KEYWORD2
+stat_ch2	KEYWORD2
+stat_ch3	KEYWORD2
+dump	KEYWORD2
+statdump	KEYWORD2
+read	KEYWORD2
+incr	KEYWORD2
+decr	KEYWORD2
+write	KEYWORD2
+setwiper	KEYWORD2
+stat	KEYWORD2
+tcon0	KEYWORD2
+tcon1	KEYWORD2
+slave_on	KEYWORD2
+slave_off	KEYWORD2
+
+

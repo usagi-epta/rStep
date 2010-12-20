@@ -1,0 +1,23 @@
+DBGU("Status LED",27);
+>>
+Status LED: 0
+Status LED: 1
+
+
+
+
+DBGU_PIN("Status LED",27);
+>>
+Status LED: INPUT
+Status LED: is LOW
+
+Status LED: Output
+Status LED: is HIGH
+
+
+
+
+DBGU_ADV("Status LED", 27, "turned on", "turned off");
+>>
+Status LED turned on
+Status LED turned off
