@@ -1,4 +1,5 @@
-
+#include <ctype.h>
+#include <stdio.h>
 
 //str: token in the form of Xnnn
 //old: head of object chain else null
@@ -14,7 +15,7 @@ void addObj(uint8_t *str) {
      return;
   }
   c = &command_list[commandLength++];
-  c->type   = str[0];
+  c->type   = toupper(str[0]); //make input case insensitive
   c->value  = strtod((const char*)&str[1], NULL);
 }
 

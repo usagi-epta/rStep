@@ -83,7 +83,7 @@
 #define MINMAX_X 23
 #define MINMAX_Y 22
 #define MINMAX_Z 26
-#define ESTOP    30
+#define ESTOP    24
 
 // STRUCTURES
 struct u16_t {

@@ -47,15 +47,22 @@ axis nextEvent(void) {
   }
 }
 
+//#define dbg(x) Serial.print("DEBUG: "); Serial.println(x)
+#define dbg(x)
+
 
 /* reset the interal timer to zero*/
 void myResetMicros(void) {
+//  Serial.print("MSG ["); Serial.print(timer0_overflow_count);Serial.println("]");
+  dbg("reset");
   uint8_t oldSREG = SREG;
   cli();
   timer0_overflow_count = 0;
   TCNT0 = 0;
   SREG = oldSREG;
 }
+
+
 
 void r_move(float feedrate) {
   uint32_t starttime,duration;
@@ -64,6 +71,8 @@ void r_move(float feedrate) {
   uint8_t i;
 
   //uint8_t sreg = intDisable();
+
+dbg("a");
 
   if (!feedrate ) {
     //compute max feedrate per axis
@@ -79,7 +88,7 @@ void r_move(float feedrate) {
       zaxis->delta_units*zaxis->delta_units);
     duration = ((distance * 60000000.0) / feedrate); //in uS
   }
-
+dbg("b");
   // setup axis
   for (i=0;i<3;i++) {
     a = axis_array[i];
@@ -91,7 +100,7 @@ void r_move(float feedrate) {
       a->nextEvent = 0xFFFFFFFF;
     }
   }
-  
+dbg("c");  
   myResetMicros();
   starttime = myMicros();
 #ifdef REPORT_DELAY
@@ -101,11 +110,13 @@ void r_move(float feedrate) {
   uint32_t zaxis_delta_steps = zaxis->delta_steps;
 #endif
   // start move
-  
+dbg("d");  
   while (xaxis->delta_steps || yaxis->delta_steps || zaxis->delta_steps) {
     a = nextEvent();
     while (myMicros() < (starttime + a->nextEvent) ); //wait till next action is required
+    dbg("d1");
     if (can_move(a)) {
+      dbg("d2");
       _STEP_PORT |= a->direct_step_pin;
       //need to wait 1uS
       if (F_CPU == 20000000) {
@@ -116,6 +127,7 @@ void r_move(float feedrate) {
       __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
       _STEP_PORT &= ~a->direct_step_pin;
     }
+    dbg("d3");
     if (--a->delta_steps) {
       a->nextEvent += a->timePerStep;
     } 
@@ -134,7 +146,7 @@ void r_move(float feedrate) {
     }
 #endif
   }
- 
+  dbg("e");
   //we are at the target
   xaxis->current_units = xaxis->target_units;
   yaxis->current_units = yaxis->target_units;

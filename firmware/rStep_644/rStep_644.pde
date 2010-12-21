@@ -48,10 +48,13 @@ void setup() {
   //default configuration
   process_string((uint8_t*)"G21"); //default in mm
   quiet = false;
+  /*
   Serial.print("start (v");
   Serial.print("$Rev$ @ ");
   Serial.print(F_CPU);
   Serial.println("Hz)");
+  */
+  Serial.println("START");
   LED2_OFF();
 }
 

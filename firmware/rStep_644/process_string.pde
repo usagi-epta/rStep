@@ -293,39 +293,40 @@ void process_string(uint8_t  *instruction) {
       break;
     case 202: //output stauts of limit switches
       Serial.print("MSG X Y Z ESTOP:");
-      for (uint8_t i=0; i<3; i++) {
-        Serial.print( digitalRead(axis_array[i]->minMax_pin) ? "SHORT " : "OPEN  " );
-      }
-      Serial.println( digitalRead(ESTOP) ? "SHORT ": "OPEN  ");
+        for (uint8_t i=0; i<3; i++) {
+          Serial.print( digitalRead(axis_array[i]->minMax_pin) ? "OPEN  ": "SHORT " );
+        }
+        Serial.println( digitalRead(ESTOP) ? "OPEN  ": "SHORT ");
+      return_status = RET_OK;
       break;
-    case 301: //set ZERO location on PCB
+    case 250: //set ZERO location on PCB
       // move down till ESTOP pin shorts (i.e. spindle touches PCB)
       while (digitalRead(ESTOP)) {
-        manual_step(ZAXIS, FORWARD);
+        manual_step(ZAXIS, BACKWARD);
         delayMicroseconds(200);
       }
       // move up slowly till ESTOP pin no longer shorts (should be 1 step)
       while (!digitalRead(ESTOP)) {
-        manual_step(ZAXIS, BACKWARD);
+        manual_step(ZAXIS, FORWARD);
         delay(1);
       }
       zaxis->current_units = 0;
       calculate_deltas();
       return_status = RET_OK;
       break;
-    case 302: //set ZERO location on PCB
+    case 251: //set ZERO location on PCB
       {
         uint32_t count=0;
         // move down till ESTOP pin shorts (i.e. spindle touches PCB)
         while (digitalRead(ESTOP)) {
-          manual_step(ZAXIS, FORWARD);
+          manual_step(ZAXIS, BACKWARD);
           count++;
           delayMicroseconds(200);
         }
         Message1("STEPS",count);
         // move to start
         while (count--) {
-          manual_step(ZAXIS, BACKWARD);
+          manual_step(ZAXIS, FORWARD);
           delay(200);
         }
       }
@@ -353,6 +354,7 @@ void process_string(uint8_t  *instruction) {
     }
   }
 }
+
 
 
 

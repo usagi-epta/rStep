@@ -26,14 +26,22 @@ void config_read(void) {
   }
   if (EEPROM.read(i+1) != checksum) {
 	//XXX add more error checking code here
-	Serial.println("ERRCHECKSUM");
+	Serial.println("ERR CHECKSUM");
   }
 }
 
+float val2current(uint8_t val) {
+  float out;
+  out = (float)(((uint16_t)val)<<1);
+  out = (out * 2.0) / (float)0x100; 
+  return out;
+}
+  
+  
 void config_dump(void) {
   Message3F("SBI", config.steps_inch.x, config.steps_inch.y, config.steps_inch.z, DEC);
   Message3F("MFR", config.max_feedrate.x, config.max_feedrate.y, config.max_feedrate.z, DEC);
-  Message3F("Cur", config.current.x, config.current.y, config.current.z, DEC);
+  Message3F("Cur", val2current(config.current.x), val2current(config.current.y), val2current(config.current.z), DEC);
   Message1F("Step", config.stepping, DEC);
   Message1F("Abs", config.abs_mode, DEC);
 }
