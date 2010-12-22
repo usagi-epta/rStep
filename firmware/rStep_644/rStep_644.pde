@@ -60,7 +60,7 @@ void setup() {
   */
   
   //init serial port
-  fdevopen( &myputc, 0);
+  fdevopen( &my_putc, 0);
   printf("START");
   LED2_OFF();
 }
