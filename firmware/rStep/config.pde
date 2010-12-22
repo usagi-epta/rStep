@@ -39,9 +39,9 @@ float val2current(uint8_t val) {
   
   
 void config_dump(void) {
-  Message3F("SBI", config.steps_inch.x, config.steps_inch.y, config.steps_inch.z, DEC);
-  Message3F("MFR", config.max_feedrate.x, config.max_feedrate.y, config.max_feedrate.z, DEC);
-  Message3F("Cur", val2current(config.current.x), val2current(config.current.y), val2current(config.current.z), DEC);
+  Message3("SBI", config.steps_inch.x, config.steps_inch.y, config.steps_inch.z,DEC);
+  Message3("MFR", config.max_feedrate.x, config.max_feedrate.y, config.max_feedrate.z,DEC);
+  Message3F("Cur", val2current(config.current.x), val2current(config.current.y), val2current(config.current.z));
   Message1F("Step", config.stepping, DEC);
   Message1F("Abs", config.abs_mode, DEC);
 }

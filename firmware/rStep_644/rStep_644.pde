@@ -23,6 +23,10 @@ axis xaxis;
 axis yaxis;
 axis zaxis;
 
+int my_putc( char c, FILE *t) {
+  Serial.write( c );
+}
+
 void setup() {
   quiet = true;
   Serial.begin(9600);
@@ -54,7 +58,10 @@ void setup() {
   Serial.print(F_CPU);
   Serial.println("Hz)");
   */
-  Serial.println("START");
+  
+  //init serial port
+  fdevopen( &myputc, 0);
+  printf("START");
   LED2_OFF();
 }
 

@@ -11,16 +11,25 @@
 					Serial.print('(');\
 					Serial.print(value, format);\
 					Serial.println(')')
-#define Message3F(msg,x,y,z,format) 	Serial.print("MSG ");\
+#define Message3F(msg,x,y,z) 	Serial.print("MSG ");\
 					Serial.print(msg);\
 					Serial.print('(');\
-					Serial.print(x, format);\
+					Serial.print(x);\
 					Serial.print(',');\
-					Serial.print(y, format);\
+					Serial.print(y);\
 					Serial.print(',');\
-					Serial.print(z, format);\
+					Serial.print(z);\
 					Serial.println(')')
-#define MessageCoordinates(x,y,z) Message3F("Coord",x,y,z,5)
+#define Message3(msg,x,y,z,format) 	Serial.print("MSG ");\
+					Serial.print(msg);\
+					Serial.print('(');\
+					Serial.print(x,format);\
+					Serial.print(',');\
+					Serial.print(y,format);\
+					Serial.print(',');\
+					Serial.print(z,format);\
+					Serial.println(')')
+#define MessageCoordinates(x,y,z) Message3("Coord",x,y,z,5)
 
 #endif
 
