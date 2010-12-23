@@ -81,10 +81,10 @@ public class InputParser {
 				fire(new StepByInchMessageEvent(this, v[0].intValue(), v[1].intValue(), v[2].intValue()));
 				
 			} else if(m.matches("MFR *\\(.*\\)$") && (v = parse_numbers(3, m)) != null) {
-				fire(new FeedRateMessageEvent(this, v[0], v[1], v[2]));
+				fire(new FeedRateMessageEvent(this, v[0].intValue(), v[1].intValue(), v[2].intValue()));
 				
 			} else if(m.matches("CUR *\\(.*\\)$") && (v = parse_numbers(3, m)) != null) {
-				fire(new CurrentMessageEvent(this, v[0], v[1], v[2]));
+				fire(new CurrentMessageEvent(this, v[0].intValue(), v[1].intValue(), v[2].intValue()));
 				
 			} else if(m.matches("STEP *\\(.*\\)$") && (v = parse_numbers(1, m)) != null) {
 				fire(new SteppingMessageEvent(this, v[0].intValue()));

@@ -53,6 +53,15 @@ btw, you need a working JRE 1.5 or greater.
 Once the library is installed, you'll just have to run jrStepGUI.jar.
 
 STORY
+2010-12-23
+* Command splitting was wrong for Fn Gx commands in com.studionex.jrStepGUI.rStep.RStep.
+* Comments within curly brace are removed in com.studionex.jrStepGUI.rStep.PlayThread. 
+
+2010-12-17
+* Added PWM duty cycle value in HardwareConfigJDialog.
+* Current message values and feed rate turned from double to int after reading
+  rStep typedef struct config_t in _init.h. 
+
 2010-12-16
 * A little dialog (HardwareConfigJDialog) to set up the rStep non-volatile
   memory has been added.

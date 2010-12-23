@@ -39,10 +39,9 @@ import org.bushe.swing.event.EventTopicSubscriber;
 
 import com.studionex.misc.ui.VerticalLabelUI;
 import com.studionex.rStep.input.CoordinatesMessageEvent;
-import com.studionex.rStep.input.InputEvent;
 
 @SuppressWarnings("serial")
-public class InfoJPanel extends JPanel implements EventTopicSubscriber<InputEvent>, UIStatesHandler {
+public class InfoJPanel extends JPanel implements EventTopicSubscriber<CoordinatesMessageEvent>, UIStatesHandler {
 	private UIStatesHandler.UIStates uiState;
 	private static final Locale LOCALE = null;
 	private static final String DOUBLE_FORMAT = "%.5f";
@@ -174,14 +173,10 @@ public class InfoJPanel extends JPanel implements EventTopicSubscriber<InputEven
 		
 	}
 
-	public void onEvent(String topic, InputEvent inputEvent) {
-		if(inputEvent instanceof CoordinatesMessageEvent) {
-			CoordinatesMessageEvent coordinatesMessageEvent = (CoordinatesMessageEvent)inputEvent;
-			xCoordinateJTextField.setText(String.format(LOCALE, DOUBLE_FORMAT, coordinatesMessageEvent.getX()));
-			yCoordinateJTextField.setText(String.format(LOCALE, DOUBLE_FORMAT, coordinatesMessageEvent.getY()));
-			zCoordinateJTextField.setText(String.format(LOCALE, DOUBLE_FORMAT, coordinatesMessageEvent.getZ()));
-		}
-		
+	public void onEvent(String topic, CoordinatesMessageEvent data) {
+		xCoordinateJTextField.setText(String.format(LOCALE, DOUBLE_FORMAT, data.getX()));
+		yCoordinateJTextField.setText(String.format(LOCALE, DOUBLE_FORMAT, data.getY()));
+		zCoordinateJTextField.setText(String.format(LOCALE, DOUBLE_FORMAT, data.getZ()));
 	}
 	
 	private static JTextField coordinateJTextFieldFactory(String initialValue) {

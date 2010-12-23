@@ -22,8 +22,8 @@ package com.studionex.rStep.input;
  */
 
 @SuppressWarnings("serial")
-public class CurrentMessageEvent extends Double3DMessageEvent {
-	public CurrentMessageEvent(Object source, double x, double y, double z) {
+public class CurrentMessageEvent extends Int3DMessageEvent {
+	public CurrentMessageEvent(Object source, int x, int y, int z) {
 		super(source, x, y, z);
 	}
 

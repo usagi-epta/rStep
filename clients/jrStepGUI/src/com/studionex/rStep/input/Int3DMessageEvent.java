@@ -22,13 +22,25 @@ package com.studionex.rStep.input;
  */
 
 @SuppressWarnings("serial")
-public class StepByInchMessageEvent extends Int3DMessageEvent {
-	public StepByInchMessageEvent(Object source, int x, int y, int z) {
-		super(source, x, y, z);
+public abstract class Int3DMessageEvent extends InputEvent {
+	private final int x;
+	private final int y;
+	private final int z;
+
+	public Int3DMessageEvent(Object source, int x, int y, int z) {
+		super(source);
+		
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
+
+	public int getX() { return x; }
+	public int getY() { return y; }
+	public int getZ() { return z; }
 
 	@Override
 	public String toString() {
-		return "Step by inch: " + getX() + ", " + getY() + ", " + getZ();
+		return "Int 3D: " + getX() + ", " + getY() + ", " + getZ();
 	}
 }

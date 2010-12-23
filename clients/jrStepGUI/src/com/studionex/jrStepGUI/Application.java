@@ -176,7 +176,6 @@ public class Application extends JFrame implements EventTopicSubscriber<Object> 
 			}
 
 		} else if(topic.startsWith("PlayThread")) {
-			System.out.println("Application on event:" + topic + " / " + data);
 			if(topic.equals("PlayThread FILE_OPENED")) {
 				setUIState(UIStates.FILE_OPENED);
 				

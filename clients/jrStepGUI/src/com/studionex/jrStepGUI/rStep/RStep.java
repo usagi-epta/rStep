@@ -111,7 +111,8 @@ public class RStep implements InputEventListener {
 		for(String partialCommand: splittedCommand) {
 			if(singleCommand.isEmpty())
 				singleCommand = partialCommand;
-			else if(partialCommand.startsWith("G") || partialCommand.startsWith("M")) {
+			else if((singleCommand.startsWith("G") || singleCommand.startsWith("M")) &&
+					(partialCommand.startsWith("G") || partialCommand.startsWith("M"))) {
 				// it's the beginning of a new single command
 				commands.add(singleCommand);
 				singleCommand = partialCommand;

@@ -54,6 +54,7 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 	private JFormattedTextField[] currentJFormattedTextField;
 	
 	private SteppingJComboBox steppingJComboBox;
+	private JFormattedTextField pwmJFormattedTextField;
 		
 	private Application application;
 	
@@ -86,8 +87,8 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 		this.setLayout(new GridBagLayout());
 		
 		sbiJFormattedTextField = buildLabelAndTextField3D(0, 0, "Step by inch", "\\d+");
-		mfrJFormattedTextField = buildLabelAndTextField3D(3, 0, "Max feed rate", "\\d+(\\.\\d{1,5})?");
-		currentJFormattedTextField = buildLabelAndTextField3D(3, 4, "Current", "\\d+(\\.\\d{1,5})?");
+		mfrJFormattedTextField = buildLabelAndTextField3D(3, 0, "Max feed rate", "\\d+");
+		currentJFormattedTextField = buildLabelAndTextField3D(3, 4, "Current", "\\d+");
 		
 		this.add(new JLabel("Stepping"),
 				new GridBagConstraints(
@@ -101,8 +102,8 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 		
 		this.add(new JLabel(" "),
 				new GridBagConstraints(
-						/* gridx */ 0, /* gridy */ 1,
-						/* gridwidth */ 1, /* gridheight */ 3,
+						/* gridx */ 0, /* gridy */ 5,
+						/* gridwidth */ 1, /* gridheight */ 1,
 						/* weightx */ 0.1, /* weighty */ 1.0,
 						/* anchor */ GridBagConstraints.NORTHEAST,
 						/* fill */ GridBagConstraints.VERTICAL,
@@ -111,6 +112,7 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 
 		
 		steppingJComboBox = new SteppingJComboBox();
+		steppingJComboBox.setToolTipText("Stepping");
 		this.add(steppingJComboBox,
 				new GridBagConstraints(
 						/* gridx */ 1, /* gridy */ 5,
@@ -121,10 +123,32 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 						/* insets */ new Insets(0, 0, 0, MainJPanel.GAP),
 						/* ipadx */ 0, /* ipady */ 0));
 
+		this.add(new JLabel("PWM duty cycle"),
+				new GridBagConstraints(
+						/* gridx */ 0, /* gridy */ 6,
+						/* gridwidth */ 3, /* gridheight */ 1,
+						/* weightx */ 0.0, /* weighty */ 0.0,
+						/* anchor */ GridBagConstraints.NORTHEAST,
+						/* fill */ GridBagConstraints.HORIZONTAL,
+						/* insets */ new Insets(MainJPanel.GAP, MainJPanel.GAP, MainJPanel.GAP, 0),
+						/* ipadx */ 0, /* ipady */ 0));
+		
+		this.add(new JLabel(" "),
+				new GridBagConstraints(
+						/* gridx */ 0, /* gridy */ 7,
+						/* gridwidth */ 1, /* gridheight */ 1,
+						/* weightx */ 0.1, /* weighty */ 1.0,
+						/* anchor */ GridBagConstraints.NORTHEAST,
+						/* fill */ GridBagConstraints.VERTICAL,
+						/* insets */ new Insets(0, 0, 0, 0),
+						/* ipadx */ 0, /* ipady */ 0));
+
+		pwmJFormattedTextField = buildLabelAndTextField(1, 7, " ", "PWM duty cycle", "\\d+");
+
 		this.add(new JLabel(" "),
 				new GridBagConstraints(
 						/* gridx */ 0, /* gridy */ 8,
-						/* gridwidth */ 3, /* gridheight */ 1,
+						/* gridwidth */ 6, /* gridheight */ 1,
 						/* weightx */ 1.0, /* weighty */ 1.0,
 						/* anchor */ GridBagConstraints.NORTH,
 						/* fill */ GridBagConstraints.BOTH,
@@ -211,18 +235,20 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 			sbiJFormattedTextField[2].setValue(new Integer(stepByInchMessageEvent.getZ()));
 		} else if(inputEvent instanceof FeedRateMessageEvent) {
 			FeedRateMessageEvent feedRateMessageEvent = (FeedRateMessageEvent)inputEvent;
-			mfrJFormattedTextField[0].setValue(new Double(feedRateMessageEvent.getX()));
-			mfrJFormattedTextField[1].setValue(new Double(feedRateMessageEvent.getY()));
-			mfrJFormattedTextField[2].setValue(new Double(feedRateMessageEvent.getZ()));
+			mfrJFormattedTextField[0].setValue(new Integer(feedRateMessageEvent.getX()));
+			mfrJFormattedTextField[1].setValue(new Integer(feedRateMessageEvent.getY()));
+			mfrJFormattedTextField[2].setValue(new Integer(feedRateMessageEvent.getZ()));
 		} else if(inputEvent instanceof CurrentMessageEvent) {
 			CurrentMessageEvent currentMessageEvent = (CurrentMessageEvent)inputEvent;
-			currentJFormattedTextField[0].setValue(new Double(currentMessageEvent.getX()));
-			currentJFormattedTextField[1].setValue(new Double(currentMessageEvent.getY()));
-			currentJFormattedTextField[2].setValue(new Double(currentMessageEvent.getZ()));
+			currentJFormattedTextField[0].setValue(new Integer(currentMessageEvent.getX()));
+			currentJFormattedTextField[1].setValue(new Integer(currentMessageEvent.getY()));
+			currentJFormattedTextField[2].setValue(new Integer(currentMessageEvent.getZ()));
 		} else if(inputEvent instanceof SteppingMessageEvent) {
 			SteppingMessageEvent steppingMessageEvent = (SteppingMessageEvent)inputEvent;
 			steppingJComboBox.setStepping(steppingMessageEvent.getStepping());
 		}
+		// TODO: receive a message with the PWM duty cycle
+		pwmJFormattedTextField.setValue(new Integer(128));
 		
 	}
 	
@@ -231,14 +257,15 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 				"M101 X" + (Integer)sbiJFormattedTextField[0].getValue() +
 					" Y" + (Integer)sbiJFormattedTextField[1].getValue() +
 					" Z" + (Integer)sbiJFormattedTextField[2].getValue() +
-				" M102 X" + (Double)mfrJFormattedTextField[0].getValue() +
-					" Y" + (Double)mfrJFormattedTextField[1].getValue() +
-					" Z" + (Double)mfrJFormattedTextField[2].getValue() +
-				" M100 X" + (Double)currentJFormattedTextField[0].getValue() +
-					" Y" + (Double)currentJFormattedTextField[1].getValue() +
-					" Z" + (Double)currentJFormattedTextField[2].getValue() +
+				" M102 X" + (Integer)mfrJFormattedTextField[0].getValue() +
+					" Y" + (Integer)mfrJFormattedTextField[1].getValue() +
+					" Z" + (Integer)mfrJFormattedTextField[2].getValue() +
+				" M100 X" + (Integer)currentJFormattedTextField[0].getValue() +
+					" Y" + (Integer)currentJFormattedTextField[1].getValue() +
+					" Z" + (Integer)currentJFormattedTextField[2].getValue() +
 				" M103 S" + steppingJComboBox.getStepping() +
-				" M200");
+				" M105 S" + (Integer)pwmJFormattedTextField.getValue() +
+				" M201");
 	}
 	
 	private static class SteppingJComboBox extends JComboBox {

@@ -128,6 +128,8 @@ public class PlayThread extends Thread {
 				String cleanLine = line.trim();
 				// remove comments (within parenthesis)
 				cleanLine = cleanLine.replaceAll("\\(.*\\)", "");
+				// remove comments {within curly brace}
+				cleanLine = cleanLine.replaceAll("\\{.*\\}", "");
 				
 				if(cleanLine.length() > 0) {
 					// send the available line to rStep

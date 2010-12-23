@@ -22,8 +22,8 @@ package com.studionex.rStep.input;
  */
 
 @SuppressWarnings("serial")
-public class FeedRateMessageEvent extends Double3DMessageEvent {
-	public FeedRateMessageEvent(Object source, double x, double y, double z) {
+public class FeedRateMessageEvent extends Int3DMessageEvent {
+	public FeedRateMessageEvent(Object source, int x, int y, int z) {
 		super(source, x, y, z);
 	}
 
