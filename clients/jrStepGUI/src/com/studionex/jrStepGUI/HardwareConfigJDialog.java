@@ -72,7 +72,7 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 
 		buildUI();
 
-		this.setSize(320, 240);
+		this.setSize(320, 280);
 		
 		// move this to the screen center
 		MySwingUtilities.displayCentered(this); 
@@ -220,7 +220,7 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 						/* gridwidth */ 1, /* gridheight */ 1,
 						/* weightx */ 1.0, /* weighty */ 0.0,
 						/* anchor */ GridBagConstraints.NORTHWEST,
-						/* fill */ GridBagConstraints.NONE,
+						/* fill */ GridBagConstraints.HORIZONTAL,
 						/* insets */ new Insets(0, 0, 0, MainJPanel.GAP),
 						/* ipadx */ 0, /* ipady */ 0));
 
