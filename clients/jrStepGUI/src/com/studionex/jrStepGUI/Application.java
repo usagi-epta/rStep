@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.regex.Pattern;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -49,7 +50,6 @@ import com.studionex.rStep.input.SyntaxMessageEvent;
 @SuppressWarnings("serial")
 public class Application extends JFrame implements EventTopicSubscriber<Object>  {
 	private RStep rStep;
-//	private boolean startup = true;
 	private RStepPlayer rStepPlayer;
 
 	private UIStates uiState;
@@ -84,6 +84,7 @@ public class Application extends JFrame implements EventTopicSubscriber<Object> 
 		this.addWindowListener(new ApplicationWindowEventHandler());
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
+		this.setIconImage(new ImageIcon(getClass().getResource("jrStepGUI_icon.png")).getImage());
 		this.setTitle("jrStepGUI");
 		this.setSize(700, 525);
 		
@@ -92,10 +93,17 @@ public class Application extends JFrame implements EventTopicSubscriber<Object> 
 		setUIState(UIStates.STARTUP);
 		this.setVisible(true);
 
-		// open a SerialJDialog that allows to choose and open
-		// the serial port on which rStep communicates
-		SerialJDialog serialJDialog = new SerialJDialog(this);
-		serialJDialog.setVisible(true);
+		try {
+			// open a SerialJDialog that allows to choose and open
+			// the serial port on which rStep communicates
+			SerialJDialog serialJDialog = new SerialJDialog(this);
+			serialJDialog.setVisible(true);
+		} catch(UnsatisfiedLinkError e) {
+			// the native library file seems to be unreachable
+			errorDialog(
+					e.toString() + "\njava.library.path = " + System.getProperty("java.library.path"),
+					JOptionPane.ERROR_MESSAGE);
+		}
 	}
 	
 	public void send(String command) {

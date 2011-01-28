@@ -253,6 +253,7 @@ public class HardwareConfigJDialog extends JDialog implements EventTopicSubscrib
 	}
 	
 	private void updateHardwareConfig() {
+		// TODO: change should be applied iff the corresponding value has changed
 		application.send(
 				"M101 X" + (Integer)sbiJFormattedTextField[0].getValue() +
 					" Y" + (Integer)sbiJFormattedTextField[1].getValue() +

@@ -84,9 +84,9 @@ public class RStep implements InputEventListener {
 		getRStep().disconnect();
 	}
 
-	public boolean reset() {
+	public boolean resetConnection() {
 		try {
-			getRStep().reset();
+			getRStep().resetConnection();
 		} catch (ConnectionException e) {
 			// TODO: log this?
 			e.printStackTrace();

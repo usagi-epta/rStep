@@ -53,6 +53,16 @@ btw, you need a working JRE 1.5 or greater.
 Once the library is installed, you'll just have to run jrStepGUI.jar.
 
 STORY
+2011-01-28
+* Pops up an error dialog when the RXTX native library is not found.
+* Some application icon added.
+
+2011-01-20
+* com.studionex.rStep.RStep.reset() and
+  com.studionex.jrStepGUI.rStep.RStep.reset() have been renamed
+  com.studionex.rStep.RStep.resetConnection() and
+  com.studionex.jrStepGUI.rStep.RStep.resetConnection() respectively.
+
 2010-12-23
 * Command splitting was wrong for Fn Gx commands in com.studionex.jrStepGUI.rStep.RStep.
 * Comments within curly brace are removed in com.studionex.jrStepGUI.rStep.PlayThread. 

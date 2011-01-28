@@ -13,7 +13,6 @@ import com.studionex.rStep.input.InputParser;
 import com.studionex.rStep.input.ReplyEvent;
 import com.studionex.rStep.input.Serial;
 
-
 /*
  * Copyright 2010 Jean-Louis Paquelin
  * 
@@ -86,7 +85,7 @@ public class RStep implements InputEventListener {
     		getSerialPort().close();
 	}
 
-	public void reset() throws ConnectionException {
+	public void resetConnection() throws ConnectionException {
 		if(isConnected()) {
 			String serialPortName = getSerialPort().getPortName();
 			
@@ -102,6 +101,8 @@ public class RStep implements InputEventListener {
 			connect(serialPortName);
 		}
 	}
+	
+	// TODO: add a reset() method that resets the Arduino without closing the connection
 	
 	public void setSerialMonitor(PrintStream monitorStream) {
 		this.monitorStream = monitorStream;
