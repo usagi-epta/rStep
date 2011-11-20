@@ -12,6 +12,11 @@ which is tightly integrated with stepper motor controllers and a DC motor contro
 designed to be compatible with the Arduino suite of tools and libraries to allow for beginners to quickly add 
 functionality and customisations. The first version has been designed as an Arduino plug-n-play shield. 
 
+RXTX INSTILLATION - MAC
+-----------------------
+Place librxtxSerial.jnilib and RXTXcomm.jar from the 'RXTX-Mac' folder into /Library/Java/Extensions, which allows 
+the jrStepGUI client to function.
+
 CREDITS
 -------
 rStep firmware and hardware etc… designed and created by Reza Naima (http://reza.net/cms/index.php?page=rstep) and 
