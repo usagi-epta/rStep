@@ -14,8 +14,8 @@ functionality and customisations. The first version has been designed as an Ardu
 
 RXTX INSTILLATION - MAC
 -----------------------
-Place librxtxSerial.jnilib and RXTXcomm.jar from the 'RXTX-Mac' folder into /Library/Java/Extensions, which allows 
-the jrStepGUI client to function.
+Place librxtxSerial.jnilib and RXTXcomm.jar from the 'RXTX-Mac' folder into the folder you have jrStepGUI_110128.jar in, 
+which allows the jrStepGUI client to function while not messing with your Arduino IDE set up.
 
 CREDITS
 -------
